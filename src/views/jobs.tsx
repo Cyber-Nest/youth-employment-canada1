@@ -1,19 +1,32 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Helmet } from '@dr.pogodin/react-helmet';
-import { Link, useSearchParams } from '@/router';
-import { motion, AnimatePresence } from 'motion/react';
+import { useState, useMemo, useEffect } from "react";
+import { Helmet } from "@dr.pogodin/react-helmet";
+import { Link, useSearchParams } from "@/router";
+import { motion, AnimatePresence } from "motion/react";
 import {
-  Search, MapPin, Clock, DollarSign, Building2,
-  SlidersHorizontal, X, ChevronRight, Wifi, Leaf,
-  ChevronLeft, ChevronDown,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+  Search,
+  MapPin,
+  Clock,
+  DollarSign,
+  Building2,
+  SlidersHorizontal,
+  X,
+  ChevronRight,
+  Wifi,
+  Leaf,
+  ChevronLeft,
+  ChevronDown,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
-  ALL_CATEGORIES, ALL_PROVINCES, ALL_TYPES,
-  filterJobs, postedLabel,
-  type JobFilters, type Job,
-} from '@/lib/jobs-data';
+  ALL_CATEGORIES,
+  ALL_PROVINCES,
+  ALL_TYPES,
+  filterJobs,
+  postedLabel,
+  type JobFilters,
+  type Job,
+} from "@/lib/jobs-data";
 
 /* ── Constants ──────────────────────────────────────────────────────── */
 const PAGE_SIZE = 8;
@@ -21,7 +34,11 @@ const PAGE_SIZE = 8;
 /* ── Animations ─────────────────────────────────────────────────────── */
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' as const } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: "easeOut" as const },
+  },
 };
 const stagger = {
   hidden: {},
@@ -66,7 +83,9 @@ function JobCard({ job }: { job: Job }) {
         <h3 className="font-bold text-[#1C1C1C] text-base leading-snug mb-0.5 group-hover:text-[#2563EB] transition-colors duration-200">
           {job.title}
         </h3>
-        <p className="text-sm text-[#2563EB] font-semibold mb-3">{job.company}</p>
+        <p className="text-sm text-[#2563EB] font-semibold mb-3">
+          {job.company}
+        </p>
 
         {/* Meta */}
         <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4">
@@ -88,7 +107,9 @@ function JobCard({ job }: { job: Job }) {
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-[#2563EB]/8">
-          <span className="text-xs text-[#475569]/45">{postedLabel(job.postedDaysAgo)}</span>
+          <span className="text-xs text-[#475569]/45">
+            {postedLabel(job.postedDaysAgo)}
+          </span>
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] group-hover:gap-2 transition-all duration-200">
             View Job <ChevronRight size={13} />
           </span>
@@ -99,7 +120,13 @@ function JobCard({ job }: { job: Job }) {
 }
 
 /* ── Filter pill ────────────────────────────────────────────────────── */
-function FilterPill({ label, onRemove }: { label: string; onRemove: () => void }) {
+function FilterPill({
+  label,
+  onRemove,
+}: {
+  label: string;
+  onRemove: () => void;
+}) {
   return (
     <span className="inline-flex items-center gap-1.5 text-xs bg-[#2563EB]/10 text-[#0F172A] border border-[#2563EB]/20 rounded-full px-3 py-1 font-medium">
       {label}
@@ -117,7 +144,12 @@ function FilterPill({ label, onRemove }: { label: string; onRemove: () => void }
 
 /* ── Select field ───────────────────────────────────────────────────── */
 function FilterSelect({
-  id, label, value, onChange, options, placeholder,
+  id,
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
 }: {
   id: string;
   label: string;
@@ -128,7 +160,10 @@ function FilterSelect({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-xs font-semibold text-[#475569]/60 uppercase tracking-wider">
+      <label
+        htmlFor={id}
+        className="text-xs font-semibold text-[#475569]/60 uppercase tracking-wider"
+      >
         {label}
       </label>
       <div className="relative">
@@ -139,9 +174,14 @@ function FilterSelect({
           className="w-full appearance-none rounded-xl border border-[#2563EB]/20 bg-white px-3 py-2.5 text-sm text-[#1C1C1C] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 pr-8"
         >
           <option value="">{placeholder}</option>
-          {options.map((o) => <option key={o}>{o}</option>)}
+          {options.map((o) => (
+            <option key={o}>{o}</option>
+          ))}
         </select>
-        <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#475569]/40 pointer-events-none" />
+        <ChevronDown
+          size={14}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#475569]/40 pointer-events-none"
+        />
       </div>
     </div>
   );
@@ -150,11 +190,11 @@ function FilterSelect({
 /* ── Main page ──────────────────────────────────────────────────────── */
 export default function JobsPage() {
   const [filters, setFilters] = useState<JobFilters>({
-    query: '',
-    location: '',
-    province: '',
-    category: '',
-    type: '',
+    query: "",
+    location: "",
+    province: "",
+    category: "",
+    type: "",
     remote: false,
     indigenous: false,
   });
@@ -162,40 +202,59 @@ export default function JobsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState('');
+  const [fetchError, setFetchError] = useState("");
   const [searchParams] = useSearchParams();
+  const queryParam = searchParams.get("search")?.trim() ?? "";
+  const locationParam = searchParams.get("location")?.trim() ?? "";
 
   useEffect(() => {
-    const searchParam = searchParams.get('search')?.trim() ?? '';
-    const locationParam = searchParams.get('location')?.trim() ?? '';
-    const matchedProvince = ALL_PROVINCES.find((province) => province.toLowerCase() === locationParam.toLowerCase());
-    setFilters((prev) => ({
-      ...prev,
-      query: searchParam,
-      province: matchedProvince ? matchedProvince : '',
-      location: matchedProvince ? '' : locationParam,
-    }));
-  }, [searchParams]);
+    const matchedProvince = ALL_PROVINCES.find(
+      (province) => province.toLowerCase() === locationParam.toLowerCase(),
+    );
+
+    const province = matchedProvince || "";
+    const location = matchedProvince ? "" : locationParam;
+
+    setFilters((prev) => {
+      // prevent unnecessary updates
+      if (
+        prev.query === queryParam &&
+        prev.province === province &&
+        prev.location === location
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        query: queryParam,
+        province,
+        location,
+      };
+    });
+  }, [queryParam, locationParam]);
 
   useEffect(() => {
     async function loadJobs() {
       setLoading(true);
-      setFetchError('');
+      setFetchError("");
       try {
-        const response = await fetch('/api/jobs');
+        const response = await fetch("/api/jobs");
         const data = await response.json();
         if (!response.ok) {
           const message = data?.error
-            ? `${data.error}${data?.sqlMessage ? `: ${data.sqlMessage}` : ''}`
+            ? `${data.error}${data?.sqlMessage ? `: ${data.sqlMessage}` : ""}`
             : `Unable to load jobs (${response.status}).`;
           throw new Error(message);
         }
         if (!Array.isArray(data.jobs)) {
-          throw new Error('Unexpected jobs response from server.');
+          throw new Error("Unexpected jobs response from server.");
         }
         setJobs(data.jobs);
       } catch (error) {
-        setFetchError(error instanceof Error ? error.message : 'Unable to load jobs.');
+        setFetchError(
+          error instanceof Error ? error.message : "Unable to load jobs.",
+        );
       } finally {
         setLoading(false);
       }
@@ -209,7 +268,15 @@ export default function JobsPage() {
   };
 
   const clearAll = () => {
-    setFilters({ query: '', location: '', province: '', category: '', type: '', remote: false, indigenous: false });
+    setFilters({
+      query: "",
+      location: "",
+      province: "",
+      category: "",
+      type: "",
+      remote: false,
+      indigenous: false,
+    });
     setPage(1);
   };
 
@@ -219,9 +286,11 @@ export default function JobsPage() {
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const activeFilterCount = [
-    filters.province, filters.category, filters.type,
-    filters.remote ? 'remote' : '',
-    filters.indigenous ? 'indigenous' : '',
+    filters.province,
+    filters.category,
+    filters.type,
+    filters.remote ? "remote" : "",
+    filters.indigenous ? "indigenous" : "",
   ].filter(Boolean).length;
 
   const hasActiveFilters = activeFilterCount > 0 || filters.query;
@@ -243,9 +312,28 @@ export default function JobsPage() {
           aria-hidden="true"
         >
           <svg viewBox="0 0 400 400" fill="none">
-            <circle cx="200" cy="200" r="180" stroke="currentColor" strokeWidth="1" />
-            <circle cx="200" cy="200" r="120" stroke="currentColor" strokeWidth="1" opacity="0.6" />
-            <circle cx="200" cy="200" r="60" fill="currentColor" opacity="0.15" />
+            <circle
+              cx="200"
+              cy="200"
+              r="180"
+              stroke="currentColor"
+              strokeWidth="1"
+            />
+            <circle
+              cx="200"
+              cy="200"
+              r="120"
+              stroke="currentColor"
+              strokeWidth="1"
+              opacity="0.6"
+            />
+            <circle
+              cx="200"
+              cy="200"
+              r="60"
+              fill="currentColor"
+              opacity="0.15"
+            />
           </svg>
         </div>
 
@@ -266,17 +354,21 @@ export default function JobsPage() {
               Find Your Next Opportunity
             </h1>
             <p className="text-[#475569]/70 text-lg leading-relaxed mb-8">
-              Explore jobs from employers and organizations across every province and territory in Canada.
+              Explore jobs from employers and organizations across every
+              province and territory in Canada.
             </p>
 
             {/* Search bar */}
             <div className="flex gap-3 max-w-xl">
               <div className="relative flex-1">
-                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#475569]/40" />
+                <Search
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#475569]/40"
+                />
                 <Input
                   type="search"
                   value={filters.query}
-                  onChange={(e) => set('query', e.target.value)}
+                  onChange={(e) => set("query", e.target.value)}
                   placeholder="Job title, company, or keyword…"
                   className="pl-10 border-[#2563EB]/20 focus-visible:ring-[#2563EB]/30 bg-white h-12 text-sm"
                 />
@@ -298,10 +390,19 @@ export default function JobsPage() {
             className="flex flex-wrap gap-6 mt-10"
           >
             {[
-              { value: `${jobs.length}`, label: 'Active Listings' },
-              { value: `${jobs.filter((j) => j.indigenous).length}`, label: 'Employers' },
-              { value: `${jobs.filter((j) => j.remote).length}`, label: 'Remote Roles' },
-              { value: `${new Set(jobs.map((j) => j.province)).size}`, label: 'Provinces & Territories' },
+              { value: `${jobs.length}`, label: "Active Listings" },
+              {
+                value: `${jobs.filter((j) => j.indigenous).length}`,
+                label: "Employers",
+              },
+              {
+                value: `${jobs.filter((j) => j.remote).length}`,
+                label: "Remote Roles",
+              },
+              {
+                value: `${new Set(jobs.map((j) => j.province)).size}`,
+                label: "Provinces & Territories",
+              },
             ].map(({ value, label }) => (
               <div key={label} className="flex items-baseline gap-2">
                 <span
@@ -321,12 +422,13 @@ export default function JobsPage() {
       <section className="bg-white py-10 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
-
             {/* ── Sidebar filters (desktop) ──────────────────────── */}
             <aside className="hidden lg:flex flex-col gap-5 sticky top-24">
               <div className="bg-[#F8FAFC] rounded-2xl p-5 border border-[#2563EB]/10">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-[#1C1C1C] text-sm">Filter Jobs</h2>
+                  <h2 className="font-bold text-[#1C1C1C] text-sm">
+                    Filter Jobs
+                  </h2>
                   {hasActiveFilters && (
                     <button
                       type="button"
@@ -343,7 +445,7 @@ export default function JobsPage() {
                     id="filter-province"
                     label="Province / Territory"
                     value={filters.province}
-                    onChange={(v) => set('province', v)}
+                    onChange={(v) => set("province", v)}
                     options={ALL_PROVINCES}
                     placeholder="All provinces"
                   />
@@ -351,7 +453,7 @@ export default function JobsPage() {
                     id="filter-category"
                     label="Category"
                     value={filters.category}
-                    onChange={(v) => set('category', v)}
+                    onChange={(v) => set("category", v)}
                     options={ALL_CATEGORIES}
                     placeholder="All categories"
                   />
@@ -359,7 +461,7 @@ export default function JobsPage() {
                     id="filter-type"
                     label="Employment Type"
                     value={filters.type}
-                    onChange={(v) => set('type', v)}
+                    onChange={(v) => set("type", v)}
                     options={ALL_TYPES}
                     placeholder="All types"
                   />
@@ -369,19 +471,23 @@ export default function JobsPage() {
                       <input
                         type="checkbox"
                         checked={filters.remote}
-                        onChange={(e) => set('remote', e.target.checked)}
+                        onChange={(e) => set("remote", e.target.checked)}
                         className="w-4 h-4 accent-[#2563EB]"
                       />
-                      <span className="text-sm text-[#475569]/75 font-medium">Remote / Hybrid only</span>
+                      <span className="text-sm text-[#475569]/75 font-medium">
+                        Remote / Hybrid only
+                      </span>
                     </label>
                     <label className="flex items-center gap-2.5 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={filters.indigenous}
-                        onChange={(e) => set('indigenous', e.target.checked)}
+                        onChange={(e) => set("indigenous", e.target.checked)}
                         className="w-4 h-4 accent-[#7A9E7E]"
                       />
-                      <span className="text-sm text-[#6B3A2A]/75 font-medium">Employers only</span>
+                      <span className="text-sm text-[#6B3A2A]/75 font-medium">
+                        Employers only
+                      </span>
                     </label>
                   </div>
                 </div>
@@ -396,7 +502,8 @@ export default function JobsPage() {
                   Hiring Young Talent?
                 </h3>
                 <p className="text-white/70 text-xs leading-relaxed mb-4">
-                  Post your job and reach thousands of qualified Youth across Canada.
+                  Post your job and reach thousands of qualified Youth across
+                  Canada.
                 </p>
                 <Link to="/post-a-job">
                   <Button
@@ -414,7 +521,10 @@ export default function JobsPage() {
               {/* Mobile filter toggle */}
               <div className="flex items-center justify-between mb-5 lg:hidden">
                 <p className="text-sm text-[#475569]/60">
-                  <span className="font-bold text-[#1C1C1C]">{filtered.length}</span> jobs found
+                  <span className="font-bold text-[#1C1C1C]">
+                    {filtered.length}
+                  </span>{" "}
+                  jobs found
                 </p>
                 <Button
                   type="button"
@@ -438,7 +548,7 @@ export default function JobsPage() {
                 {showFilters && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
+                    animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.25 }}
                     className="overflow-hidden mb-5 lg:hidden"
@@ -448,7 +558,7 @@ export default function JobsPage() {
                         id="m-filter-province"
                         label="Province / Territory"
                         value={filters.province}
-                        onChange={(v) => set('province', v)}
+                        onChange={(v) => set("province", v)}
                         options={ALL_PROVINCES}
                         placeholder="All provinces"
                       />
@@ -456,7 +566,7 @@ export default function JobsPage() {
                         id="m-filter-category"
                         label="Category"
                         value={filters.category}
-                        onChange={(v) => set('category', v)}
+                        onChange={(v) => set("category", v)}
                         options={ALL_CATEGORIES}
                         placeholder="All categories"
                       />
@@ -464,22 +574,42 @@ export default function JobsPage() {
                         id="m-filter-type"
                         label="Employment Type"
                         value={filters.type}
-                        onChange={(v) => set('type', v)}
+                        onChange={(v) => set("type", v)}
                         options={ALL_TYPES}
                         placeholder="All types"
                       />
                       <div className="flex flex-col gap-2.5">
                         <label className="flex items-center gap-2.5 cursor-pointer">
-                          <input type="checkbox" checked={filters.remote} onChange={(e) => set('remote', e.target.checked)} className="w-4 h-4 accent-[#2563EB]" />
-                          <span className="text-sm text-[#475569]/75 font-medium">Remote / Hybrid only</span>
+                          <input
+                            type="checkbox"
+                            checked={filters.remote}
+                            onChange={(e) => set("remote", e.target.checked)}
+                            className="w-4 h-4 accent-[#2563EB]"
+                          />
+                          <span className="text-sm text-[#475569]/75 font-medium">
+                            Remote / Hybrid only
+                          </span>
                         </label>
                         <label className="flex items-center gap-2.5 cursor-pointer">
-                          <input type="checkbox" checked={filters.indigenous} onChange={(e) => set('indigenous', e.target.checked)} className="w-4 h-4 accent-[#7A9E7E]" />
-                          <span className="text-sm text-[#6B3A2A]/75 font-medium">Employers only</span>
+                          <input
+                            type="checkbox"
+                            checked={filters.indigenous}
+                            onChange={(e) =>
+                              set("indigenous", e.target.checked)
+                            }
+                            className="w-4 h-4 accent-[#7A9E7E]"
+                          />
+                          <span className="text-sm text-[#6B3A2A]/75 font-medium">
+                            Employers only
+                          </span>
                         </label>
                       </div>
                       {hasActiveFilters && (
-                        <button type="button" onClick={clearAll} className="text-xs text-[#C8782A] hover:underline font-medium text-left">
+                        <button
+                          type="button"
+                          onClick={clearAll}
+                          className="text-xs text-[#C8782A] hover:underline font-medium text-left"
+                        >
                           Clear all filters
                         </button>
                       )}
@@ -491,13 +621,41 @@ export default function JobsPage() {
               {/* Results header + active filter pills */}
               <div className="flex flex-wrap items-center gap-3 mb-5">
                 <p className="hidden lg:block text-sm text-[#6B3A2A]/60">
-                  <span className="font-bold text-[#1C1C1C]">{filtered.length}</span> job{filtered.length !== 1 ? 's' : ''} found
+                  <span className="font-bold text-[#1C1C1C]">
+                    {filtered.length}
+                  </span>{" "}
+                  job{filtered.length !== 1 ? "s" : ""} found
                 </p>
-                {filters.province && <FilterPill label={filters.province} onRemove={() => set('province', '')} />}
-                {filters.category && <FilterPill label={filters.category} onRemove={() => set('category', '')} />}
-                {filters.type && <FilterPill label={filters.type} onRemove={() => set('type', '')} />}
-                {filters.remote && <FilterPill label="Remote" onRemove={() => set('remote', false)} />}
-                {filters.indigenous && <FilterPill label="Employers" onRemove={() => set('indigenous', false)} />}
+                {filters.province && (
+                  <FilterPill
+                    label={filters.province}
+                    onRemove={() => set("province", "")}
+                  />
+                )}
+                {filters.category && (
+                  <FilterPill
+                    label={filters.category}
+                    onRemove={() => set("category", "")}
+                  />
+                )}
+                {filters.type && (
+                  <FilterPill
+                    label={filters.type}
+                    onRemove={() => set("type", "")}
+                  />
+                )}
+                {filters.remote && (
+                  <FilterPill
+                    label="Remote"
+                    onRemove={() => set("remote", false)}
+                  />
+                )}
+                {filters.indigenous && (
+                  <FilterPill
+                    label="Employers"
+                    onRemove={() => set("indigenous", false)}
+                  />
+                )}
               </div>
 
               {/* Featured strip (only on first page with no active filters) */}
@@ -579,12 +737,12 @@ export default function JobsPage() {
                     className="text-xl font-bold text-[#1C1C1C] mb-2"
                     style={{ fontFamily: "'Playfair Display', serif" }}
                   >
-                    {jobs.length === 0 ? 'No jobs posted yet' : 'No jobs found'}
+                    {jobs.length === 0 ? "No jobs posted yet" : "No jobs found"}
                   </h3>
                   <p className="text-[#6B3A2A]/60 text-sm mb-5 max-w-xs">
                     {jobs.length === 0
-                      ? 'Please check back soon.'
-                      : 'Try adjusting your search terms or removing some filters.'}
+                      ? "Please check back soon."
+                      : "Try adjusting your search terms or removing some filters."}
                   </p>
                   {jobs.length !== 0 && (
                     <Button
@@ -607,7 +765,10 @@ export default function JobsPage() {
                     variant="outline"
                     size="sm"
                     disabled={page === 1}
-                    onClick={() => { setPage((p) => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    onClick={() => {
+                      setPage((p) => p - 1);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
                     className="border-[#C8782A]/25 text-[#6B3A2A] hover:bg-[#C8782A]/5 disabled:opacity-40"
                   >
                     <ChevronLeft size={15} />
@@ -616,11 +777,14 @@ export default function JobsPage() {
                     <button
                       key={i}
                       type="button"
-                      onClick={() => { setPage(i + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      onClick={() => {
+                        setPage(i + 1);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
                       className={`w-9 h-9 rounded-lg text-sm font-semibold transition-all duration-200 ${
                         page === i + 1
-                          ? 'bg-[#C8782A] text-white shadow-sm'
-                          : 'text-[#6B3A2A]/70 hover:bg-[#C8782A]/10'
+                          ? "bg-[#C8782A] text-white shadow-sm"
+                          : "text-[#6B3A2A]/70 hover:bg-[#C8782A]/10"
                       }`}
                     >
                       {i + 1}
@@ -631,7 +795,10 @@ export default function JobsPage() {
                     variant="outline"
                     size="sm"
                     disabled={page === totalPages}
-                    onClick={() => { setPage((p) => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    onClick={() => {
+                      setPage((p) => p + 1);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
                     className="border-[#C8782A]/25 text-[#6B3A2A] hover:bg-[#C8782A]/5 disabled:opacity-40"
                   >
                     <ChevronRight size={15} />
