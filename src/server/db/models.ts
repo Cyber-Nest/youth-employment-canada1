@@ -88,6 +88,7 @@ export type JobDoc = {
   province: string;
   salary?: string | null;
   salaryPeriod?: string | null;
+  vacancies?: number | null;
   adDurationDays: number;
   startDate?: string | null;
   positionType?: string | null;

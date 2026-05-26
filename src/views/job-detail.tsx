@@ -599,6 +599,14 @@ export default function JobDetailPage() {
                         <p>{job.startDate}</p>
                       </div>
                     )}
+                    {job.vacancies != null && (
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          Vacancies
+                        </p>
+                        <p>{job.vacancies}</p>
+                      </div>
+                    )}
                     {job.positionType && (
                       <div>
                         <p className="text-sm font-semibold text-gray-900">

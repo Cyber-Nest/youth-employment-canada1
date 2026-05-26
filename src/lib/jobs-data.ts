@@ -33,6 +33,7 @@ export interface Job {
   education?: string;
   travel?: string;
   vacation?: string;
+  vacancies?: number | null;
   jobPostingDate?: string;
   nocCode?: string;
   contactName?: string;

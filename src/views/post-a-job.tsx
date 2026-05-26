@@ -250,6 +250,7 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
   const [salary, setSalary] = useState("");
   const [salaryError, setSalaryError] = useState("");
   const [salaryPeriod, setSalaryPeriod] = useState("");
+  const [vacancies, setVacancies] = useState("");
   const [adDurationDays, setAdDurationDays] = useState("90");
   const [startDate, setStartDate] = useState("");
   const [positionType, setPositionType] = useState("Full-Time Permanent");
@@ -295,6 +296,7 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
       setCategory(initialData.category || "");
       setSalary(initialData.salary || "");
       setSalaryPeriod(initialData.salaryPeriod || "");
+      setVacancies(initialData.vacancies || "");
       setAdDurationDays(String(initialData.adDurationDays || "90"));
       setStartDate(initialData.startDate || "");
       setPositionType(initialData.positionType || "Full-Time Permanent");
@@ -594,6 +596,7 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
           employmentType,
           salary: salary.replace(/,/g, ""),
           salaryPeriod,
+          vacancies: vacancies.trim() || null,
           adDurationDays,
           category,
           startDate: startDate.trim() || null,
@@ -983,6 +986,18 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                         placeholder="e.g. Immediate, June 2026"
                       />
                     </div>
+                    <div className="flex flex-col gap-2">
+                      <Label className="text-gray-700 font-medium text-sm">Vacancies</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={vacancies}
+                        onChange={(e) => setVacancies(e.target.value)}
+                        placeholder="e.g. 2, 4, 5"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="flex flex-col gap-2">
                       <Label className="text-gray-700 font-medium text-sm">Position Type</Label>
                       <select

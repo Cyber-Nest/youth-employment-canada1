@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
     employmentType,
     salary,
     salaryPeriod,
+    vacancies,
     adDurationDays,
     category,
     startDate,
@@ -117,6 +118,7 @@ export async function POST(req: NextRequest) {
   const websiteValue = String(website ?? "").trim();
   const contactNameValue = String(contactName ?? "").trim();
   const salaryValue = String(salary ?? "").trim();
+  const vacanciesValue = vacancies ? Number(vacancies) : null;
 
   // Required field validations
   if (!String(title ?? "").trim())
@@ -276,6 +278,7 @@ export async function POST(req: NextRequest) {
     province: String(province).trim(),
     salary: salaryValue || null,
     salaryPeriod: String(salaryPeriod ?? "").trim() || null,
+    vacancies: vacanciesValue,
     adDurationDays: durationDays,
     startDate: String(startDate ?? "").trim() || null,
     positionType: String(positionType ?? "").trim() || null,
