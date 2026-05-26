@@ -73,6 +73,7 @@ const ALL_TYPES = [
 ];
 
 interface Job {
+  createdAt: string;
   id: string;
   jobUniqueId: string;
   title: string;
@@ -171,14 +172,6 @@ function filterJobs(jobs: Job[], filters: JobFilters): Job[] {
   });
 }
 
-function formatPostedDate(postedDaysAgo: number): string {
-  if (postedDaysAgo === 0) return "Posted today";
-  if (postedDaysAgo === 1) return "Posted yesterday";
-  if (postedDaysAgo < 7) return `Posted ${postedDaysAgo} days ago`;
-  if (postedDaysAgo < 30)
-    return `Posted ${Math.floor(postedDaysAgo / 7)} weeks ago`;
-  return `Posted ${Math.floor(postedDaysAgo / 30)} months ago`;
-}
 
 /* ── Job card ───────────────────────────────────────────────────────── */
 function JobCard({ job }: { job: Job }) {
@@ -237,7 +230,12 @@ function JobCard({ job }: { job: Job }) {
 
         <div className="flex items-center justify-between pt-3 border-t border-blue-100">
           <span className="text-xs text-gray-400">
-            {formatPostedDate(job.postedDaysAgo)}
+            Posted on{" "}
+            {new Date(job.createdAt).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
           </span>
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 group-hover:gap-2 transition-all duration-200">
             View Job <ChevronRight size={13} />

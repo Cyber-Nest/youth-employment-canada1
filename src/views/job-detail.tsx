@@ -63,9 +63,7 @@ function RelatedCard({ job }: { job: Job }) {
         <p className="text-xs text-blue-600 font-medium truncate">
           {job.company}
         </p>
-        <p className="text-xs text-gray-400 mt-0.5">
-          {job.location}
-        </p>
+        <p className="text-xs text-gray-400 mt-0.5">{job.location}</p>
       </div>
       <ChevronRight
         size={14}
@@ -391,16 +389,14 @@ export default function JobDetailPage() {
                   <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                     <Clock size={13} className="text-blue-500" />
 
-                    {job.postedDaysAgo === 0
-                      ? "Posted Today"
-                      : `Posted on ${new Date(job.createdAt).toLocaleDateString(
-                          "en-IN",
-                          {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          },
-                        )}`}
+                    {`Posted on ${new Date(job.createdAt).toLocaleDateString(
+                      "en-IN",
+                      {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      },
+                    )}`}
                   </span>
                   {job.jobUniqueId && (
                     <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
@@ -877,9 +873,7 @@ export default function JobDetailPage() {
                     <p className="font-semibold text-sm text-gray-900">
                       {job.company}
                     </p>
-                    <p className="text-xs text-gray-400">
-                      {job.location},
-                    </p>
+                    <p className="text-xs text-gray-400">{job.location}</p>
                   </div>
                 </div>
                 {job.indigenous && (
