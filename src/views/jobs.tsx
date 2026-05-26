@@ -222,21 +222,21 @@ function JobCard({ job }: { job: Job }) {
           </span>
           {job.salary && (
             <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
-              <DollarSign size={11} className="text-blue-500" />${job.salary}
+              <DollarSign size={11} className="text-blue-500" />{job.salary}
               {job.salaryPeriod ? ` / ${job.salaryPeriod}` : ""}
             </span>
           )}
         </div>
 
         <div className="flex items-center justify-between pt-3 border-t border-blue-100">
-          <span className="text-xs text-gray-400">
+          {/* <span className="text-xs text-gray-400">
             Posted on{" "}
             {new Date(job.createdAt).toLocaleDateString("en-IN", {
               day: "numeric",
               month: "short",
               year: "numeric",
             })}
-          </span>
+          </span> */}
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 group-hover:gap-2 transition-all duration-200">
             View Job <ChevronRight size={13} />
           </span>
