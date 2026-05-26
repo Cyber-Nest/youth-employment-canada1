@@ -4,7 +4,6 @@ import { Link, useParams } from "@/router";
 import { motion } from "motion/react";
 import {
   MapPin,
-  Clock,
   DollarSign,
   Building2,
   ChevronRight,
@@ -14,7 +13,6 @@ import {
   ArrowLeft,
   Share2,
   AlertCircle,
-  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Job } from "@/lib/jobs-data";
@@ -384,9 +382,9 @@ export default function JobDetailPage() {
                 <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
                   <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                     <MapPin size={13} className="text-blue-500" />
-                    {job.location},
+                    {job.location}
                   </span>
-                  <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
+                  {/* <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                     <Clock size={13} className="text-blue-500" />
 
                     {`Posted on ${new Date(job.createdAt).toLocaleDateString(
@@ -397,7 +395,7 @@ export default function JobDetailPage() {
                         year: "numeric",
                       },
                     )}`}
-                  </span>
+                  </span> */}
                   {job.jobUniqueId && (
                     <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                       <CheckCircle size={13} className="text-blue-500" />
@@ -408,7 +406,7 @@ export default function JobDetailPage() {
                     <DollarSign size={13} className="text-blue-500" />
                     {job.salary} {job.salaryPeriod as any}
                   </span>
-                  <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
+                  {/* <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                     <Calendar size={13} className="text-blue-500" />
                     Closes{" "}
                     {new Date(job.expiresAt).toLocaleDateString("en-IN", {
@@ -416,7 +414,7 @@ export default function JobDetailPage() {
                       month: "short",
                       year: "numeric",
                     })}
-                  </span>
+                  </span> */}
                 </motion.div>
               </div>
 
@@ -454,7 +452,7 @@ export default function JobDetailPage() {
                 {/* <p className="text-xs text-gray-400 text-center">
                   Posted {postedLabel(job.postedDaysAgo)}
                 </p> */}
-                <p className="text-xs text-gray-400 text-center">
+                {/* <p className="text-xs text-gray-400 text-center">
                   Posted{" "}
                   {job.postedDaysAgo === 0
                     ? "Today"
@@ -468,7 +466,7 @@ export default function JobDetailPage() {
                     day: "numeric",
                   })}
                   )
-                </p>
+                </p> */}
               </motion.div>
             </div>
           </motion.div>
