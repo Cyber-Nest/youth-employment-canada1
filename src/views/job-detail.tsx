@@ -13,12 +13,11 @@ import {
   CheckCircle,
   ArrowLeft,
   Share2,
-  Bookmark,
-  BookmarkCheck,
   AlertCircle,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { postedLabel, type Job } from "@/lib/jobs-data";
+import { Job } from "@/lib/jobs-data";
 
 /* ── Animations ─────────────────────────────────────────────────────── */
 const fadeUp = {
@@ -65,7 +64,7 @@ function RelatedCard({ job }: { job: Job }) {
           {job.company}
         </p>
         <p className="text-xs text-gray-400 mt-0.5">
-          {job.location}, {job.province}
+          {job.location}
         </p>
       </div>
       <ChevronRight
@@ -80,7 +79,6 @@ function RelatedCard({ job }: { job: Job }) {
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [job, setJob] = useState<Job | null>(null);
-  const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState("");
@@ -179,20 +177,82 @@ export default function JobDetailPage() {
       howToApply.inPerson),
   );
 
+  // Add this Skeleton component
+  const JobDetailSkeleton = () => (
+    <div className="bg-blue-50 min-h-screen">
+      {/* Breadcrumb Skeleton */}
+      <div className="bg-blue-50 border-b border-blue-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="animate-pulse flex items-center gap-2">
+            <div className="h-3 w-12 bg-gray-200 rounded" />
+            <div className="h-3 w-3 bg-gray-200 rounded" />
+            <div className="h-3 w-10 bg-gray-200 rounded" />
+            <div className="h-3 w-3 bg-gray-200 rounded" />
+            <div className="h-3 w-24 bg-gray-200 rounded" />
+          </div>
+        </div>
+      </div>
+
+      {/* Hero Skeleton */}
+      <div className="py-10 lg:py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse">
+            {/* Back link */}
+            <div className="h-4 w-28 bg-gray-200 rounded mb-6" />
+
+            {/* Badges */}
+            <div className="flex gap-2 mb-4">
+              <div className="h-6 w-16 bg-gray-200 rounded-full" />
+              <div className="h-6 w-24 bg-gray-200 rounded-full" />
+              <div className="h-6 w-20 bg-gray-200 rounded-full" />
+            </div>
+
+            {/* Title */}
+            <div className="h-12 w-3/4 bg-gray-200 rounded mb-3" />
+
+            {/* Company */}
+            <div className="h-6 w-32 bg-gray-200 rounded mb-5" />
+
+            {/* Meta chips */}
+            <div className="flex flex-wrap gap-3">
+              <div className="h-8 w-36 bg-gray-200 rounded-full" />
+              <div className="h-8 w-28 bg-gray-200 rounded-full" />
+              <div className="h-8 w-32 bg-gray-200 rounded-full" />
+              <div className="h-8 w-24 bg-gray-200 rounded-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Body Skeleton */}
+      <div className="bg-white py-10 pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10">
+            <div className="animate-pulse space-y-6">
+              <div className="h-4 w-full bg-gray-200 rounded" />
+              <div className="h-4 w-11/12 bg-gray-200 rounded" />
+              <div className="h-4 w-full bg-gray-200 rounded" />
+              <div className="h-4 w-10/12 bg-gray-200 rounded" />
+              <div className="h-32 w-full bg-gray-200 rounded-xl" />
+              <div className="h-40 w-full bg-gray-200 rounded-xl" />
+            </div>
+            <div className="animate-pulse space-y-4">
+              <div className="h-48 w-full bg-gray-200 rounded-2xl" />
+              <div className="h-64 w-full bg-gray-200 rounded-2xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <>
         <Helmet>
           <title>Loading Job — Youth Employment Canada</title>
         </Helmet>
-        <section className="bg-blue-50 min-h-[60vh] flex items-center justify-center py-20 px-4">
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-5">
-              <div className="h-8 w-8 rounded-full border-4 border-blue-300 border-t-blue-600 animate-spin" />
-            </div>
-            <p className="text-gray-500 text-sm">Loading job details…</p>
-          </div>
-        </section>
+        <JobDetailSkeleton />
       </>
     );
   }
@@ -237,7 +297,7 @@ export default function JobDetailPage() {
         </title>
         <meta
           name="description"
-          content={`${job.title} at ${job.company} in ${job.location}, ${job.province}. ${job.employmentType} · ${job.salary}. Apply on Youth Employment Canada.`}
+          content={`${job.title} at ${job.company} in ${job.location}. ${job.employmentType} · ${job.salary}. Apply on Youth Employment Canada.`}
         />
       </Helmet>
 
@@ -326,11 +386,21 @@ export default function JobDetailPage() {
                 <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
                   <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                     <MapPin size={13} className="text-blue-500" />
-                    {job.location}, {job.province}
+                    {job.location},
                   </span>
                   <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                     <Clock size={13} className="text-blue-500" />
-                    {job.employmentType}
+
+                    {job.postedDaysAgo === 0
+                      ? "Posted Today"
+                      : `Posted on ${new Date(job.createdAt).toLocaleDateString(
+                          "en-IN",
+                          {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          },
+                        )}`}
                   </span>
                   {job.jobUniqueId && (
                     <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
@@ -340,12 +410,17 @@ export default function JobDetailPage() {
                   )}
                   <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                     <DollarSign size={13} className="text-blue-500" />
-                    {job.salary}
+                    {job.salary} {job.salaryPeriod as any}
                   </span>
-                  {/* <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
+                  <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                     <Calendar size={13} className="text-blue-500" />
-                    Closes {job.closingDate}
-                  </span> */}
+                    Closes{" "}
+                    {new Date(job.expiresAt).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
                 </motion.div>
               </div>
 
@@ -355,7 +430,7 @@ export default function JobDetailPage() {
                 className="hidden lg:flex flex-col gap-3 flex-shrink-0 w-52"
               >
                 <div className="flex gap-2">
-                  <Button
+                  {/* <Button
                     type="button"
                     variant="outline"
                     size="sm"
@@ -368,20 +443,35 @@ export default function JobDetailPage() {
                       <Bookmark size={14} className="mr-1.5" />
                     )}
                     {saved ? "Saved" : "Save"}
-                  </Button>
+                  </Button> */}
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={handleShare}
-                    className="flex-1 border-blue-300 text-gray-600 hover:bg-blue-50"
+                    className="flex-1 border-blue-300 text-gray-600 hover:bg-blue-100"
                   >
                     <Share2 size={14} className="mr-1.5" />
                     {copied ? "Copied!" : "Share"}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-400 text-center">
+                {/* <p className="text-xs text-gray-400 text-center">
                   Posted {postedLabel(job.postedDaysAgo)}
+                </p> */}
+                <p className="text-xs text-gray-400 text-center">
+                  Posted{" "}
+                  {job.postedDaysAgo === 0
+                    ? "Today"
+                    : job.postedDaysAgo === 1
+                      ? "Yesterday"
+                      : `${job.postedDaysAgo} days ago`}
+                  (
+                  {new Date(job.postedAt).toLocaleDateString("en-CA", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                  )
                 </p>
               </motion.div>
             </div>
@@ -554,7 +644,16 @@ export default function JobDetailPage() {
                         <p className="text-sm font-semibold text-gray-900">
                           Posting Date
                         </p>
-                        <p>{job.jobPostingDate}</p>
+                        <p>
+                          {new Date(job.jobPostingDate).toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
+                        </p>
                       </div>
                     )}
                     {job.nocCode && (
@@ -721,7 +820,7 @@ export default function JobDetailPage() {
               {/* Mobile CTA */}
               <div className="flex flex-col gap-3 lg:hidden">
                 <div className="flex gap-3">
-                  <Button
+                  {/* <Button
                     type="button"
                     variant="outline"
                     onClick={() => setSaved((v) => !v)}
@@ -733,7 +832,7 @@ export default function JobDetailPage() {
                       <Bookmark size={15} className="mr-2" />
                     )}
                     {saved ? "Saved" : "Save Job"}
-                  </Button>
+                  </Button> */}
                   <Button
                     type="button"
                     variant="outline"
@@ -771,7 +870,7 @@ export default function JobDetailPage() {
                       {job.company}
                     </p>
                     <p className="text-xs text-gray-400">
-                      {job.location}, {job.province}
+                      {job.location},
                     </p>
                   </div>
                 </div>
