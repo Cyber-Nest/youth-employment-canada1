@@ -1,45 +1,97 @@
-import { randomUUID } from 'crypto';
-import { NextResponse, type NextRequest } from 'next/server';
-import { collection, ensureIndexes } from '@/server/db/mongo';
-import type { AccountDoc, EmployerDoc, EmployerPackageDoc, UserDoc } from '@/server/db/models';
-import { hashPassword } from '@/server/auth/local-auth';
+import { randomUUID } from "crypto";
+import { NextResponse, type NextRequest } from "next/server";
+import { collection, ensureIndexes } from "@/server/db/mongo";
+import type {
+  AccountDoc,
+  EmployerDoc,
+  EmployerPackageDoc,
+  UserDoc,
+} from "@/server/db/models";
+import { hashPassword } from "@/server/auth/local-auth";
 
 function validatePassword(password: string) {
-  if (password.length < 8) return 'Password must be at least 8 characters.';
-  if (!/[a-z]/.test(password)) return 'Password must include at least one lowercase letter.';
-  if (!/[A-Z]/.test(password)) return 'Password must include at least one uppercase letter.';
-  if (!/[0-9]/.test(password)) return 'Password must include at least one number.';
+  if (password.length < 8) return "Password must be at least 8 characters.";
+  if (!/[a-z]/.test(password))
+    return "Password must include at least one lowercase letter.";
+  if (!/[A-Z]/.test(password))
+    return "Password must include at least one uppercase letter.";
+  if (!/[0-9]/.test(password))
+    return "Password must include at least one number.";
   return null;
 }
 
 export async function POST(req: NextRequest) {
   await ensureIndexes();
   const body = await req.json().catch(() => ({}));
-  const firstName = String(body.firstName ?? '').trim();
-  const lastName = String(body.lastName ?? '').trim();
-  const email = String(body.email ?? '').trim().toLowerCase();
-  const username = String(body.username ?? '').trim().toLowerCase();
-  const password = String(body.password ?? '');
-  const businessName = String(body.businessName ?? '').trim();
-  const phoneNumber = String(body.phoneNumber ?? '').trim();
-  const province = String(body.province ?? '').trim();
+  const firstName = String(body.firstName ?? "").trim();
+  const lastName = String(body.lastName ?? "").trim();
+  const email = String(body.email ?? "")
+    .trim()
+    .toLowerCase();
+  const username = String(body.username ?? "")
+    .trim()
+    .toLowerCase();
+  const password = String(body.password ?? "");
+  const businessName = String(body.businessName ?? "").trim();
+  const phoneNumber = String(body.phoneNumber ?? "").trim();
+  const province = String(body.province ?? "").trim();
 
-  if (!firstName) return NextResponse.json({ error: 'First name is required.' }, { status: 400 });
-  if (!lastName) return NextResponse.json({ error: 'Last name is required.' }, { status: 400 });
-  if (!businessName) return NextResponse.json({ error: 'Business name is required.' }, { status: 400 });
-  if (!phoneNumber) return NextResponse.json({ error: 'Phone number is required.' }, { status: 400 });
-  if (!province) return NextResponse.json({ error: 'Province is required.' }, { status: 400 });
-  if (!username) return NextResponse.json({ error: 'Username is required.' }, { status: 400 });
+  // Validation
+  if (!firstName)
+    return NextResponse.json(
+      { error: "First name is required." },
+      { status: 400 },
+    );
+  if (!lastName)
+    return NextResponse.json(
+      { error: "Last name is required." },
+      { status: 400 },
+    );
+  if (!businessName)
+    return NextResponse.json(
+      { error: "Business name is required." },
+      { status: 400 },
+    );
+  if (!phoneNumber)
+    return NextResponse.json(
+      { error: "Phone number is required." },
+      { status: 400 },
+    );
+  if (!province)
+    return NextResponse.json(
+      { error: "Province is required." },
+      { status: 400 },
+    );
+  if (!username)
+    return NextResponse.json(
+      { error: "Username is required." },
+      { status: 400 },
+    );
+
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
+    return NextResponse.json(
+      { error: "Enter a valid email address." },
+      { status: 400 },
+    );
   }
-  const passwordError = validatePassword(password);
-  if (passwordError) return NextResponse.json({ error: passwordError }, { status: 400 });
 
-  const users = await collection<UserDoc>('users');
+  const passwordError = validatePassword(password);
+  if (passwordError)
+    return NextResponse.json({ error: passwordError }, { status: 400 });
+
+  // Check for duplicate email/username
+  const users = await collection<UserDoc>("users");
   const duplicate = await users.findOne({ $or: [{ email }, { username }] });
-  if (duplicate?.email === email) return NextResponse.json({ error: 'Email already exists.' }, { status: 409 });
-  if (duplicate?.username === username) return NextResponse.json({ error: 'Username already exists.' }, { status: 409 });
+  if (duplicate?.email === email)
+    return NextResponse.json(
+      { error: "Email already exists." },
+      { status: 409 },
+    );
+  if (duplicate?.username === username)
+    return NextResponse.json(
+      { error: "Username already exists." },
+      { status: 409 },
+    );
 
   const now = new Date();
   const userId = randomUUID();
@@ -51,28 +103,34 @@ export async function POST(req: NextRequest) {
     id: userId,
     name: fullName,
     email,
-    emailVerified: false,
+    emailVerified: true,
     image: null,
     username,
     firstName,
     lastName,
     phoneNumber,
-    accountType: 'employer',
+    accountType: "employer",
     createdAt: now,
     updatedAt: now,
   });
 
-  await (await collection<AccountDoc>('accounts')).insertOne({
+  // Create account
+  await (
+    await collection<AccountDoc>("accounts")
+  ).insertOne({
     id: randomUUID(),
     accountId: email,
-    providerId: 'credential',
+    providerId: "credential",
     userId,
     password: hashPassword(password),
     createdAt: now,
     updatedAt: now,
   });
 
-  await (await collection<EmployerDoc>('employers')).insertOne({
+  // Create employer profile
+  await (
+    await collection<EmployerDoc>("employers")
+  ).insertOne({
     id: employerId,
     userId,
     orgName: businessName,
@@ -82,15 +140,18 @@ export async function POST(req: NextRequest) {
     updatedAt: now,
   });
 
-  await (await collection<EmployerPackageDoc>('employerPackages')).insertOne({
+  // Create employer package
+  await (
+    await collection<EmployerPackageDoc>("employerPackages")
+  ).insertOne({
     id: packageId,
     employerId,
-    name: 'Free Trial',
-    jobCredits: 1,
+    name: "Free Trial",
+    jobCredits: 10,
     jobsPosted: 0,
     jobPostExpiryDays: 180,
-    creditValidity: 'Credit Never Expire',
-    status: 'Active',
+    creditValidity: "Credit Never Expire",
+    status: "Active",
     expiresAt: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
     createdAt: now,
     updatedAt: now,
@@ -103,23 +164,23 @@ export async function POST(req: NextRequest) {
         id: userId,
         name: fullName,
         email,
-        emailVerified: false,
+        emailVerified: true,
         username,
         firstName,
         lastName,
         phoneNumber,
-        accountType: 'employer',
+        accountType: "employer",
       },
       employerProfile: {
         businessName,
         phoneNumber,
         province,
-        packageName: 'Free Trial',
-        packageStatus: 'Active',
+        packageName: "Free Trial",
+        packageStatus: "Active",
         jobCredits: 1,
         jobsPosted: 0,
         jobPostExpiryDays: 180,
-        creditValidity: 'Credit Never Expire',
+        creditValidity: "Credit Never Expire",
       },
     },
     { status: 201 },

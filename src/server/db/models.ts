@@ -1,8 +1,18 @@
-export type AccountType = 'jobseeker' | 'employer';
-export type EmployerPackageStatus = 'Active' | 'Inactive' | 'Expired';
-export type JobStatus = 'draft' | 'active' | 'closed' | 'expired';
-export type ApplicationStatus = 'pending' | 'reviewed' | 'shortlisted' | 'rejected';
-export type EmploymentType = 'Full-time' | 'Part-time' | 'Contract' | 'Temporary' | 'Casual' | 'Seasonal';
+export type AccountType = "jobseeker" | "employer";
+export type EmployerPackageStatus = "Active" | "Inactive" | "Expired";
+export type JobStatus = "draft" | "active" | "closed" | "expired";
+export type ApplicationStatus =
+  | "pending"
+  | "reviewed"
+  | "shortlisted"
+  | "rejected";
+export type EmploymentType =
+  | "Full-time"
+  | "Part-time"
+  | "Contract"
+  | "Temporary"
+  | "Casual"
+  | "Seasonal";
 
 export type UserDoc = {
   id: string;
@@ -68,6 +78,7 @@ export type EmployerPackageDoc = {
 };
 
 export type JobDoc = {
+  remote: boolean;
   id: string;
   jobUniqueId: string;
   employerId: string;
@@ -77,6 +88,7 @@ export type JobDoc = {
   province: string;
   salary?: string | null;
   salaryPeriod?: string | null;
+  vacancies?: number | null;
   adDurationDays: number;
   startDate?: string | null;
   positionType?: string | null;
@@ -105,6 +117,7 @@ export type JobDoc = {
   requirements?: string | null;
   status: JobStatus;
   indigenousPreference: boolean;
+  website?: string | null;
   postedAt: Date;
   expiresAt?: Date | null;
   createdAt: Date;
@@ -132,4 +145,16 @@ export type ApplicationDoc = {
   status: ApplicationStatus;
   appliedAt: Date;
   updatedAt: Date;
+};
+
+export type OTPPurpose = "registration" | "password_reset";
+
+export type OTPDoc = {
+  id: string;
+  email: string;
+  otp: string;
+  purpose: OTPPurpose;
+  expiresAt: Date;
+  createdAt: Date;
+  used: boolean;
 };

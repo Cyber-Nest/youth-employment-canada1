@@ -24,6 +24,7 @@ export type Category =
   | 'Restaurant and Food Service';
 
 export interface Job {
+  [x: string]: any;
   descriptionHtml: string;
   requirementsHtml: string | undefined;
   startDate?: string;
@@ -32,6 +33,7 @@ export interface Job {
   education?: string;
   travel?: string;
   vacation?: string;
+  vacancies?: number | null;
   jobPostingDate?: string;
   nocCode?: string;
   contactName?: string;

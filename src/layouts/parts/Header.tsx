@@ -1,17 +1,42 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from '@/router';
-import { Menu, X, ChevronDown, LogOut, User, Briefcase } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { useSession, signOut } from '@/lib/auth/auth-client';
+import { useState, useEffect, useRef } from "react";
+import { Link, useLocation } from "@/router";
+import { Menu, X, ChevronDown, LogOut, User, Briefcase } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useSession, signOut } from "@/lib/auth/auth-client";
+
+// Click outside hook
+function useClickOutside<T extends HTMLElement>(
+  handler: () => void,
+  enabled: boolean = true,
+) {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        handler();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [handler, enabled]);
+
+  return ref;
+}
 
 const navLinks = [
-  { label: 'Home', href: '/' },
-  { label: 'Browse Jobs', href: '/jobs' },
-  { label: 'For Employers', href: '/employers' },
-  { label: 'Pricing', href: '/pricing' },
-  { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
+  { label: "Home", href: "/" },
+  { label: "Browse Jobs", href: "/jobs" },
+  { label: "For Employers", href: "/employers" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export default function Header() {
@@ -21,32 +46,45 @@ export default function Header() {
   const location = useLocation();
   const { user, isAuthenticated, isPending } = useSession();
 
+  // Close user menu when clicking outside
+  const userMenuRef = useClickOutside<HTMLDivElement>(() => {
+    setUserMenuOpen(false);
+  }, userMenuOpen);
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
     setMenuOpen(false);
+    setUserMenuOpen(false); // Also close user menu on navigation
   }, [location.pathname]);
 
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 w-full transition-all duration-300',
+        "sticky top-0 z-50 w-full transition-all duration-300",
         scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-blue-100'
-          : 'bg-white'
+          ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-blue-100"
+          : "bg-white",
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center group flex-shrink-0">
-            <span className="flex flex-col leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-              <span className="font-bold text-2xl tracking-tight text-gray-900 group-hover:text-blue-600 transition-colors duration-200 leading-none">Youth Employment</span>
-              <span className="text-[10px] font-semibold tracking-[0.25em] text-blue-600 uppercase mt-0.5">Canada</span>
+            <span
+              className="flex flex-col leading-tight"
+              style={{ fontFamily: "'Playfair Display', serif" }}
+            >
+              <span className="font-bold text-2xl tracking-tight text-gray-900 group-hover:text-blue-600 transition-colors duration-200 leading-none">
+                Youth Employment
+              </span>
+              <span className="text-[10px] font-semibold tracking-[0.25em] text-blue-600 uppercase mt-0.5">
+                Canada
+              </span>
             </span>
           </Link>
 
@@ -59,17 +97,19 @@ export default function Header() {
                   key={link.href}
                   to={link.href}
                   className={cn(
-                    'relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md group',
+                    "relative px-3 py-2 text-sm font-medium transition-colors duration-200 rounded-md group",
                     isActive
-                      ? 'text-blue-600'
-                      : 'text-gray-700 hover:text-blue-600'
+                      ? "text-blue-600"
+                      : "text-gray-700 hover:text-blue-600",
                   )}
                 >
                   {link.label}
                   <span
                     className={cn(
-                      'absolute bottom-0 left-3 right-3 h-0.5 bg-blue-600 rounded-full transition-all duration-300 origin-left',
-                      isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                      "absolute bottom-0 left-3 right-3 h-0.5 bg-blue-600 rounded-full transition-all duration-300 origin-left",
+                      isActive
+                        ? "scale-x-100"
+                        : "scale-x-0 group-hover:scale-x-100",
                     )}
                   />
                 </Link>
@@ -79,11 +119,8 @@ export default function Header() {
 
           {/* Desktop CTA Buttons */}
           <div className="hidden lg:flex items-center gap-3">
-            {/* POST A JOB BUTTON - ADDED */}
             <Link to="/post-a-job">
-              <Button 
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm hover:shadow-md transition-all duration-200"
-              >
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm hover:shadow-md transition-all duration-200">
                 <Briefcase size={15} className="mr-2" />
                 Post a Job
               </Button>
@@ -92,7 +129,7 @@ export default function Header() {
             {isPending ? (
               <div className="w-20 h-8 bg-blue-100 rounded-md animate-pulse" />
             ) : isAuthenticated && user ? (
-              <div className="relative">
+              <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen((v) => !v)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 transition-colors text-sm font-medium"
@@ -100,23 +137,39 @@ export default function Header() {
                   <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
                     <User size={14} className="text-blue-600" />
                   </div>
-                  <span className="max-w-[120px] truncate">{user.name || user.email}</span>
-                  <ChevronDown size={14} className={cn('transition-transform duration-200', userMenuOpen && 'rotate-180')} />
+                  <span className="max-w-[120px] truncate">
+                    {user.name || user.email}
+                  </span>
+                  <ChevronDown
+                    size={14}
+                    className={cn(
+                      "transition-transform duration-200",
+                      userMenuOpen && "rotate-180",
+                    )}
+                  />
                 </button>
                 {userMenuOpen && (
                   <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-blue-100 py-1 z-50">
                     <div className="px-4 py-2 border-b border-blue-50">
-                      <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                      <p className="text-xs text-gray-400 truncate">
+                        {user.email}
+                      </p>
                     </div>
-                    <Link to="/employer/dashboard">
-                      <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                    <Link to="/dashboard">
+                      <button
+                        onClick={() => setUserMenuOpen(false)}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                      >
                         <Briefcase size={14} />
                         Dashboard
                       </button>
                     </Link>
                     <button
-                      onClick={async () => { await signOut(); window.location.href = '/'; }}
-                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                      onClick={async () => {
+                        await signOut();
+                        window.location.href = "/";
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-200 hover:text-blue-600 transition-colors"
                     >
                       <LogOut size={14} />
                       Sign Out
@@ -134,13 +187,6 @@ export default function Header() {
                     Login
                   </Button>
                 </Link>
-                {/* <Link to="/register">
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm hover:shadow-md transition-all duration-200"
-                  >
-                    Sign Up
-                  </Button>
-                </Link> */}
               </>
             )}
           </div>
@@ -167,22 +213,19 @@ export default function Header() {
                   key={link.href}
                   to={link.href}
                   className={cn(
-                    'px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200',
+                    "px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200",
                     isActive
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-700 hover:bg-blue-50 hover:text-blue-600",
                   )}
                 >
                   {link.label}
                 </Link>
               );
             })}
-            
-            {/* Mobile: Post a Job Button */}
+
             <Link to="/post-a-job">
-              <Button 
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold mt-2"
-              >
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold mt-2">
                 <Briefcase size={15} className="mr-2" />
                 Post a Job
               </Button>
@@ -191,16 +234,25 @@ export default function Header() {
             <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-blue-100">
               {isAuthenticated && user ? (
                 <>
-                  <div className="px-4 py-2 text-sm text-gray-500 truncate">{user.email}</div>
+                  <div className="px-4 py-2 text-sm text-gray-500 truncate">
+                    {user.email}
+                  </div>
                   <Link to="/dashboard">
-                    <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300">
+                    <Button
+                      variant="outline"
+                      className="w-full border-gray-300 text-gray-700 hover:bg-blue-200 hover:border-blue-300"
+                      onClick={() => setMenuOpen(false)}
+                    >
                       <Briefcase size={14} className="mr-2" /> Dashboard
                     </Button>
                   </Link>
                   <Button
                     variant="outline"
-                    className="w-full border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300"
-                    onClick={async () => { await signOut(); window.location.href = '/'; }}
+                    className="w-full border-gray-300 text-gray-700 hover:bg-blue-200 hover:border-blue-300"
+                    onClick={async () => {
+                      await signOut();
+                      window.location.href = "/";
+                    }}
                   >
                     <LogOut size={14} className="mr-2" /> Sign Out
                   </Button>
@@ -208,15 +260,14 @@ export default function Header() {
               ) : (
                 <>
                   <Link to="/login">
-                    <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300">
+                    <Button
+                      variant="outline"
+                      className="w-full border-gray-300 text-gray-700 hover:bg-blue-200 hover:border-blue-300"
+                      onClick={() => setMenuOpen(false)}
+                    >
                       Login
                     </Button>
                   </Link>
-                  {/* <Link to="/register">
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-                      Sign Up
-                    </Button>
-                  </Link> */}
                 </>
               )}
             </div>

@@ -1,0 +1,106 @@
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+export const sendOTP = async (
+  email: string,
+  otp: string,
+  purpose: "registration" | "password_reset",
+) => {
+  try {
+    const emailContent = {
+      registration: {
+        subject: "Youth Employment Canada | Verify Your Email",
+        heading: "Verify Your Email Address",
+        subHeading:
+          "Welcome to Youth Employment Canada. Please verify your email to continue.",
+        instruction:
+          "Use the verification code below to complete your registration process.",
+      },
+      password_reset: {
+        subject: "Youth Employment Canada | Reset Your Password",
+        heading: "Password Reset Request",
+        subHeading: "We received a request to reset your password.",
+        instruction:
+          "Use the verification code below to continue resetting your password.",
+      },
+    };
+
+    const content = emailContent[purpose];
+
+    const info = await transporter.sendMail({
+      from: `"Youth Employment Canada" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: content.subject,
+      html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>${content.subject}</title>
+      </head>
+      <body style="margin:0; padding:0; background:#f0f9ff; font-family:Arial, Helvetica, sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f9ff; padding:40px 15px;">
+          <tr>
+            <td align="center">
+              <table width="100%" cellpadding="0" cellspacing="0" style="max-width:550px; background:#ffffff; border-radius:16px; overflow:hidden; border:1px solid #bfdbfe;">
+                <!-- Header -->
+                <tr>
+                  <td align="center" style="background:#2563EB; padding:32px 20px;">
+                    <h1 style="margin:0; color:#ffffff; font-size:28px; font-weight:700;">Youth Employment Canada</h1>
+                  </td>
+                </tr>
+                <!-- Body -->
+                <tr>
+                  <td style="padding:40px 30px;">
+                    <h2 style="margin:0 0 15px; color:#1e293b; font-size:24px; font-weight:700;">${content.heading}</h2>
+                    <p style="margin:0 0 20px; color:#64748b; font-size:15px; line-height:1.7;">${content.subHeading}</p>
+                    <p style="margin:0 0 30px; color:#64748b; font-size:15px; line-height:1.7;">${content.instruction}</p>
+                    
+                    <!-- OTP Box -->
+                    <div style="text-align:center; margin:35px 0;">
+                      <div style="display:inline-block; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px 35px;">
+                        <p style="margin:0 0 10px; color:#94a3b8; font-size:13px;">Verification Code</p>
+                        <div style="font-size:36px; font-weight:700; letter-spacing:8px; color:#2563EB; font-family:monospace;">${otp}</div>
+                      </div>
+                    </div>
+                    
+                    <!-- Info Box -->
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px;">
+                      <p style="margin:0 0 10px; color:#64748b; font-size:14px;">⏳ This code will expire in 10 minutes.</p>
+                      <p style="margin:0; color:#64748b; font-size:14px;">🔒 Never share this code with anyone.</p>
+                    </div>
+                    
+                    <p style="margin:30px 0 0; color:#94a3b8; font-size:13px; line-height:1.6;">
+                      If you didn't request this email, you can safely ignore it.
+                    </p>
+                  </td>
+                </tr>
+                <!-- Footer -->
+                <tr>
+                  <td style="padding:22px 20px; background:#f8fafc; border-top:1px solid #e2e8f0; text-align:center;">
+                    <p style="margin:0; color:#94a3b8; font-size:12px;">© ${new Date().getFullYear()} Youth Employment Canada. All rights reserved.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+      `,
+    });
+
+    return { success: true, messageId: info.messageId };
+  } catch (error: any) {
+    console.error("SMTP Error:", error.message);
+    throw new Error(`Failed to send OTP: ${error.message}`);
+  }
+};
