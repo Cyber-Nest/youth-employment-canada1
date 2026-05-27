@@ -86,7 +86,7 @@ const packages = [
     features: [
       "Job Post Expiry - 180 Days",
       "Credit Never Expire",
-      "3 Job Posting",
+      "1 Job Posting",
     ],
     cta: "Select Package",
     highlight: false,
