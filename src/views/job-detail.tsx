@@ -607,14 +607,14 @@ export default function JobDetailPage() {
                         <p>{job.vacation}</p>
                       </div>
                     )}
-                    {job.jobPostingDate && (
+                    {/* {job.jobPostingDate && (
                       <div>
                         <p className="text-sm font-semibold text-gray-900">
                           Posting Date
                         </p>
                         <p>{formatJobDate(job.jobPostingDate)}</p>
                       </div>
-                    )}
+                    )} */}
                     {job.nocCode && (
                       <div>
                         <p className="text-sm font-semibold text-gray-900">

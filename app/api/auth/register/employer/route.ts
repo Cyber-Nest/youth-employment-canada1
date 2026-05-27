@@ -166,9 +166,9 @@ export async function POST(req: NextRequest) {
 
     packageName: "Free Plan",
 
-    remainingCredits: 1,
+    remainingCredits: 3,
 
-    totalCreditsPurchased: 1,
+    totalCreditsPurchased: 3,
 
     unlimitedJobs: false,
 
@@ -209,8 +209,8 @@ export async function POST(req: NextRequest) {
         province,
         packageName: "Free Plan",
         packageStatus: "Active",
-        remainingCredits: 1,
-        totalCreditsPurchased: 1,
+        remainingCredits: 3,
+        totalCreditsPurchased: 3,
         isFreePlan: true,
         jobPostExpiryDays: 180,
       },
