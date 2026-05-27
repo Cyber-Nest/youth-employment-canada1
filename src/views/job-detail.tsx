@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   Share2,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Job } from "@/lib/jobs-data";
@@ -125,46 +126,7 @@ export default function JobDetailPage() {
   const preferred = normalizeListField(job?.preferred);
   const benefits = normalizeListField(job?.benefits);
 
-  const howToApply = job
-    ? (job.howToApply ?? {
-        byEmail: Boolean(
-          job.applyByEmail ??
-          job.apply_by_email ??
-          job.applicationEmail ??
-          job.application_email ??
-          job.applyEmail,
-        ),
-        email:
-          job.applicationEmail ||
-          job.application_email ||
-          job.applyEmail ||
-          null,
-        byMail: Boolean(
-          job.applyByMail ??
-          job.apply_by_mail ??
-          job.mailingAddress ??
-          job.mailing_address,
-        ),
-        mailingAddress: job.mailingAddress || job.mailing_address || null,
-        byPhone: Boolean(
-          job.applyByPhone ??
-          job.apply_by_phone ??
-          job.applicationPhone ??
-          job.application_phone,
-        ),
-        phone: job.applicationPhone || job.application_phone || null,
-        inPerson: Boolean(
-          job.applyInPerson ??
-          job.apply_in_person ??
-          job.inPersonAddress ??
-          job.in_person_address,
-        ),
-        inPersonAddress: job.inPersonAddress || job.in_person_address || null,
-        inPersonFromTime:
-          job.inPersonFromTime || job.in_person_from_time || null,
-        inPersonToTime: job.inPersonToTime || job.in_person_to_time || null,
-      })
-    : null;
+  const howToApply = job?.howToApply ?? null;
   const hasHowToApply = Boolean(
     howToApply &&
     (howToApply.byEmail ||
@@ -172,6 +134,23 @@ export default function JobDetailPage() {
       howToApply.byPhone ||
       howToApply.inPerson),
   );
+
+  function formatJobDate(dateValue?: string | Date, locale: string = "en-CA") {
+    if (!dateValue) return "N/A";
+
+    const date = new Date(dateValue);
+
+    if (isNaN(date.getTime())) {
+      return "Invalid date";
+    }
+
+    return date.toLocaleDateString(locale, {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      timeZone: "America/Edmonton",
+    });
+  }
 
   // Add this Skeleton component
   const JobDetailSkeleton = () => (
@@ -384,18 +363,10 @@ export default function JobDetailPage() {
                     <MapPin size={13} className="text-blue-500" />
                     {job.location}
                   </span>
-                  {/* <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
+                  <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                     <Clock size={13} className="text-blue-500" />
-
-                    {`Posted on ${new Date(job.createdAt).toLocaleDateString(
-                      "en-IN",
-                      {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      },
-                    )}`}
-                  </span> */}
+                    {`Posted on ${formatJobDate(job.jobPostingDate)}`}
+                  </span>
                   {job.jobUniqueId && (
                     <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                       <CheckCircle size={13} className="text-blue-500" />
@@ -406,15 +377,10 @@ export default function JobDetailPage() {
                     <DollarSign size={13} className="text-blue-500" />
                     {job.salary} {job.salaryPeriod as any}
                   </span>
-                  {/* <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
-                    <Calendar size={13} className="text-blue-500" />
-                    Closes{" "}
-                    {new Date(job.expiresAt).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </span> */}
+                  <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
+                    <Clock size={13} className="text-blue-500" />
+                    Closes on {formatJobDate(job.expiresAt)}
+                  </span>
                 </motion.div>
               </div>
 
@@ -646,16 +612,7 @@ export default function JobDetailPage() {
                         <p className="text-sm font-semibold text-gray-900">
                           Posting Date
                         </p>
-                        <p>
-                          {new Date(job.jobPostingDate).toLocaleDateString(
-                            "en-IN",
-                            {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            },
-                          )}
-                        </p>
+                        <p>{formatJobDate(job.jobPostingDate)}</p>
                       </div>
                     )}
                     {job.nocCode && (

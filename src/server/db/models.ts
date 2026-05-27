@@ -118,7 +118,7 @@ export type JobDoc = {
   status: JobStatus;
   indigenousPreference: boolean;
   website?: string | null;
-  postedAt: Date;
+  postedAt: Date | undefined;
   expiresAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;

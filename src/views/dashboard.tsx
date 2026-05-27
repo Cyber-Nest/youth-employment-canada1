@@ -17,6 +17,8 @@ import {
   Package,
   TrendingUp,
   ChevronRight,
+  RotateCcw,
+  PauseCircle,
 } from "lucide-react";
 
 // ============ SKELETON COMPONENTS (Mobile Optimized) ============
@@ -120,9 +122,11 @@ interface Job {
   employmentType: string;
   category: string;
   status: "active" | "draft" | "closed" | "expired";
-  postedAt: string;
+
+  jobPostingDate: string;
   expiresAt?: string;
-  description: string;
+  createdAt?: string;
+  updatedAt?: string;
   salary?: string;
   salaryPeriod?: string;
 }
@@ -170,36 +174,26 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 // ============ HELPERS ============
-const formatDate = (dateString: string) => {
+const formatDate = (dateString?: string, locale: string = "en-CA") => {
+  if (!dateString) return "N/A";
+
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-CA", {
+
+  if (isNaN(date.getTime())) {
+    return "Invalid date";
+  }
+
+  return date.toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: "America/Edmonton",
   });
 };
 
 const formatSalary = (salary?: string, period?: string) => {
   if (!salary) return null;
   return `$${parseInt(salary).toLocaleString()}${period ? ` / ${period}` : ""}`;
-};
-
-const getRelativeTime = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-
-  const isToday =
-    date.getDate() === now.getDate() &&
-    date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear();
-
-  if (isToday) return "Today";
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "2-digit",
-    day: "2-digit",
-    year: "numeric",
-  }).format(date);
 };
 
 export default function DashboardPage() {
@@ -210,6 +204,8 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   // const [logoutLoading, setLogoutLoading] = useState(false);
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
+
+  const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
 
   // Fetch user data
   useEffect(() => {
@@ -253,25 +249,6 @@ export default function DashboardPage() {
     fetchJobs();
   }, []);
 
-  // const handleLogout = async () => {
-  //   setLogoutLoading(true);
-  //   try {
-  //     const response = await fetch("/api/auth/logout", {
-  //       method: "POST",
-  //       credentials: "include",
-  //     });
-  //     if (response.ok) {
-  //       window.location.href = "/login";
-  //     } else {
-  //       setError("Logout failed.");
-  //     }
-  //   } catch {
-  //     setError("Logout failed.");
-  //   } finally {
-  //     setLogoutLoading(false);
-  //   }
-  // };
-
   const handleDeleteJob = async (jobId: string) => {
     if (!confirm("Are you sure you want to close this job posting?")) return;
     setDeletingJobId(jobId);
@@ -290,6 +267,51 @@ export default function DashboardPage() {
       alert("Network error. Please try again.");
     } finally {
       setDeletingJobId(null);
+    }
+  };
+
+  const handleJobStatus = async (jobId: string, currentStatus: string) => {
+    try {
+      setStatusUpdatingId(jobId);
+
+      const nextStatus = currentStatus === "active" ? "closed" : "active";
+
+      const res = await fetch(`/api/jobs/${jobId}/status`, {
+        method: "PATCH",
+
+        credentials: "include",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          status: nextStatus,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update job");
+      }
+
+      setJobs((prev) =>
+        prev.map((job) =>
+          job.id === jobId
+            ? {
+                ...job,
+                status: nextStatus,
+              }
+            : job,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to update job status");
+    } finally {
+      setStatusUpdatingId(null);
     }
   };
 
@@ -510,7 +532,48 @@ export default function DashboardPage() {
                                 ) : (
                                   <>
                                     <Trash2 size={14} className="mr-1" />
-                                    Close
+                                    Delete
+                                  </>
+                                )}
+                              </Button>
+
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className={`h-8 px-3 rounded-lg transition-colors ${
+                                  job.status === "active"
+                                    ? "text-gray-500 hover:text-red-600 hover:bg-red-50"
+                                    : "text-gray-500 hover:text-green-600 hover:bg-green-50"
+                                }`}
+                                onClick={() =>
+                                  handleJobStatus(job.id, job.status)
+                                }
+                                disabled={statusUpdatingId === job.id}
+                              >
+                                {statusUpdatingId === job.id ? (
+                                  <div
+                                    className={`animate-spin h-3 w-3 border-2 border-t-transparent rounded-full ${
+                                      job.status === "active"
+                                        ? "border-red-600"
+                                        : "border-green-600"
+                                    }`}
+                                  />
+                                ) : (
+                                  <>
+                                    {job.status === "active" ? (
+                                      <>
+                                        <PauseCircle
+                                          size={14}
+                                          className="mr-1"
+                                        />{" "}
+                                        Close
+                                      </>
+                                    ) : (
+                                      <>
+                                        <RotateCcw size={14} className="mr-1" />{" "}
+                                        Reopen
+                                      </>
+                                    )}
                                   </>
                                 )}
                               </Button>
@@ -543,7 +606,7 @@ export default function DashboardPage() {
                                 <Calendar size={10} className="text-gray-500" />
                               </div>
                               <span className="text-sm text-gray-500">
-                                {getRelativeTime(job.postedAt)}
+                                {formatDate(job.jobPostingDate)}{" "}
                               </span>
                             </div>
                           </div>
