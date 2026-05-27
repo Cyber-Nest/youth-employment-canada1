@@ -521,6 +521,7 @@ export async function PUT(
 
       remote: body.remote || false,
 
+      status: existingJob.status,
       // IMPORTANT
       jobPostingDate: existingPostingDate,
 

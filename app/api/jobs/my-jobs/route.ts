@@ -46,6 +46,7 @@ function buildEmployerJobItem(job: any) {
     createdAt: job.createdAt,
 
     updatedAt: job.updatedAt,
+    packageId: job.packageId || null,
   };
 }
 

@@ -66,13 +66,35 @@ export type EmployerDoc = {
 export type EmployerPackageDoc = {
   id: string;
   employerId: string;
-  name: string;
-  jobCredits: number;
-  jobsPosted: number;
+  packageName: string;
+  remainingCredits: number;
+  totalCreditsPurchased: number;
+  unlimitedJobs: boolean;
+  isFreePlan: boolean;
   jobPostExpiryDays: number;
-  creditValidity: string;
   status: EmployerPackageStatus;
-  expiresAt: Date;
+  purchasedAt: Date;
+  expiresAt?: Date | null;
+  creditExpiresAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type EmployerPackageHistoryDoc = {
+  id: string;
+  employerId: string;
+  packageName: string;
+  creditsAdded: number;
+  unlimitedJobs: boolean;
+  isFreePlan: boolean;
+  jobPostExpiryDays: number;
+  purchasedAt: Date;
+  expiresAt?: Date | null;
+  paymentStatus: "pending" | "paid" | "failed";
+  paymentProvider?: string | null;
+  transactionId?: string | null;
+  amount?: number | null;
+  currency?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -90,6 +112,8 @@ export type JobDoc = {
   salaryPeriod?: string | null;
   vacancies?: number | null;
   adDurationDays: number;
+  packageId?: string | null;
+  creditConsumed?: boolean;
   startDate?: string | null;
   positionType?: string | null;
   experience?: string | null;

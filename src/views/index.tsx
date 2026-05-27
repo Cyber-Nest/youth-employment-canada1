@@ -14,6 +14,9 @@ import {
   Quote,
   Loader2,
   X,
+  CrownIcon,
+  ShieldCheck,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,58 +135,137 @@ const stats = [
 
 const packages = [
   {
-    name: "Starter Posting",
-    tagline: "Launch your first youth opportunity",
+    icon: Star,
+    name: "Starter",
+    originalPrice: 25,
+    discountedPrice: 12.5,
+    tagline: "FEATURES OF STARTER PLAN",
     features: [
-      "Single job listing",
-      "30-day active posting",
-      "Targeted youth search visibility",
-      "Applicant email notifications",
+      "Job Post Expiry - 180 Days",
+      "Credit Never Expire",
+      "1 Job Posting",
     ],
-    cta: "Get Started",
+    cta: "Select Package",
     highlight: false,
+    badge: "50% OFF",
   },
   {
-    name: "Featured Opportunity",
-    tagline: "Stand out with a youth-focused listing",
+    icon: Zap,
+    name: "Deluxe",
+    originalPrice: 95,
+    discountedPrice: 47.5,
+    tagline: "FEATURES OF DELUXE PLAN",
     features: [
-      "Highlighted placement",
-      "60-day active posting",
-      "Priority search results",
-      "Featured badge on listing",
-      "Applicant management tools",
+      "Job Post Expiry - 180 Days",
+      "Credit Never Expire",
+      "5 Job Posting",
     ],
-    cta: "Post Featured",
-    highlight: true,
-    badge: "Most Popular",
+    cta: "Select Package",
+    highlight: true, // Marked as premium highlight variant
+    badge: "Most Popular • 50% OFF",
   },
   {
-    name: "Employer Spotlight",
-    tagline: "Share your youth-friendly employer story",
+    icon: Building2,
+    name: "Ultimate",
+    originalPrice: 195,
+    discountedPrice: 97.5,
+    tagline: "FEATURES OF ULTIMATE PLAN",
     features: [
-      "Company profile page",
-      "Multiple job listings",
-      "Logo & banner placement",
-      "Youth hiring statement",
-      "Priority support",
+      "Job Post Expiry - 180 Days",
+      "Credit Never Expire",
+      "10 Job Posting",
     ],
-    cta: "Build Your Brand",
+    cta: "Select Package",
     highlight: false,
+    badge: "50% OFF",
   },
   {
-    name: "Hiring Partnership",
-    tagline: "Support for sustained youth recruitment",
+    icon: ShieldCheck,
+    name: "Pro Plan",
+    originalPrice: 380,
+    discountedPrice: 190,
+    tagline: "FEATURES OF PRO PLAN PLAN",
     features: [
-      "Unlimited job postings",
-      "Dedicated account support",
-      "Applicant management tools",
-      "Monthly performance insights",
-      "Youth hiring resources",
+      "Job Post Expiry - 180 Days",
+      "Credit Never Expire",
+      "20 Job Posting",
     ],
-    cta: "Contact Us",
+    cta: "Select Package",
     highlight: false,
+    badge: "Best Value • 50% OFF",
+  },
+  {
+    icon: CrownIcon,
+    name: "Unlimited",
+    originalPrice: 1350,
+    discountedPrice: 675,
+    tagline: "FEATURES OF UNLIMITED PLAN",
+    features: [
+      "Job Post Expiry - 180 Days",
+      "Credit Expire 1 Year",
+      "Unlimited Jobs Posting",
+    ],
+    cta: "Select Package",
+    highlight: false,
+    darkVariant: true, // Custom premium dark look like the image
+    badge: "Mega Deal • 50% OFF",
   },
 ];
+
+// const packages = [
+//   {
+//     name: "Starter Posting",
+//     tagline: "Launch your first youth opportunity",
+//     features: [
+//       "Single job listing",
+//       "30-day active posting",
+//       "Targeted youth search visibility",
+//       "Applicant email notifications",
+//     ],
+//     cta: "Get Started",
+//     highlight: false,
+//   },
+//   {
+//     name: "Featured Opportunity",
+//     tagline: "Stand out with a youth-focused listing",
+//     features: [
+//       "Highlighted placement",
+//       "60-day active posting",
+//       "Priority search results",
+//       "Featured badge on listing",
+//       "Applicant management tools",
+//     ],
+//     cta: "Post Featured",
+//     highlight: true,
+//     badge: "Most Popular",
+//   },
+//   {
+//     name: "Employer Spotlight",
+//     tagline: "Share your youth-friendly employer story",
+//     features: [
+//       "Company profile page",
+//       "Multiple job listings",
+//       "Logo & banner placement",
+//       "Youth hiring statement",
+//       "Priority support",
+//     ],
+//     cta: "Build Your Brand",
+//     highlight: false,
+//   },
+//   {
+//     name: "Hiring Partnership",
+//     tagline: "Support for sustained youth recruitment",
+//     features: [
+//       "Unlimited job postings",
+//       "Dedicated account support",
+//       "Applicant management tools",
+//       "Monthly performance insights",
+//       "Youth hiring resources",
+//     ],
+//     cta: "Contact Us",
+//     highlight: false,
+//   },
+// ];
 
 const testimonials = [
   {
@@ -1037,34 +1119,39 @@ export default function HomePage() {
       </section>
 
       {/* ── 5. PACKAGES PREVIEW ─────────────────────────────────────────────── */}
-      <section className="bg-[#F8FAFC] py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-[#F8FAFC] py-16 lg:py-24 relative overflow-hidden">
+        {/* Modern ambient accent background blur */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-gradient-to-r from-blue-500/5 via-red-500/5 to-transparent blur-[100px] rounded-full pointer-events-none" />
+
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={stagger}
-            className="text-center mb-12"
+            className="text-center mb-16 space-y-3"
           >
-            <motion.p
+            <motion.div
               variants={fadeUp}
-              className="text-[#2563EB] font-semibold text-sm uppercase tracking-widest mb-3"
+              className="inline-flex items-center gap-1.5 bg-[#EF4444]/10 text-[#EF4444] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-[#EF4444]/20 shadow-sm mb-1"
             >
-              Employer Packages
-            </motion.p>
+              <span className="w-1.5 h-1.5 bg-[#EF4444] rounded-full animate-pulse" />
+              Limited Time: Flat 50% Off On All Plans
+            </motion.div>
             <motion.h2
               variants={fadeUp}
-              className="text-4xl lg:text-5xl font-bold text-[#1C1C1C]"
+              className="text-4xl lg:text-5xl font-bold text-[#0F172A]"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
               Packages for Every Hiring Need
             </motion.h2>
             <motion.p
               variants={fadeUp}
-              className="text-[#475569]/70 mt-4 max-w-xl mx-auto"
+              className="text-[#475569]/70 max-w-2xl mx-auto text-base font-medium"
             >
               Whether you're posting your first youth opportunity or building a
-              long-term hiring strategy, we have a package for you.
+              long-term hiring strategy, we have a tier designed for you. All
+              discounts are pre-applied below.
             </motion.p>
           </motion.div>
 
@@ -1073,85 +1160,145 @@ export default function HomePage() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={stagger}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-start"
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 items-stretch"
           >
-            {packages.map((pkg) => (
-              <motion.div
-                key={pkg.name}
-                variants={fadeUp}
-                whileHover={{
-                  y: -5,
-                  boxShadow: pkg.highlight
-                    ? "0 20px 50px rgba(37,99,235,0.12)"
-                    : "0 12px 30px rgba(15,23,42,0.06)",
-                }}
-                className={`rounded-2xl p-7 relative transition-shadow duration-200 ${
-                  pkg.highlight
-                    ? "bg-[#2563EB] text-white ring-2 ring-[#2563EB] shadow-xl lg:-mt-4 lg:mb-4"
-                    : "bg-white border border-[#2563EB]/10"
-                }`}
-              >
-                {pkg.badge && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <span className="bg-[#0F172A] text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
-                      {pkg.badge}
-                    </span>
-                  </div>
-                )}
-                <div
-                  className={`w-10 h-10 rounded-xl mb-5 flex items-center justify-center ${pkg.highlight ? "bg-white/20" : "bg-[#2563EB]/10"}`}
+            {packages.map((pkg) => {
+              // Match the layout variations decided in the core pricing view
+              const isDark = pkg.darkVariant;
+              const isHigh = pkg.highlight;
+
+              let cardStyles =
+                "bg-[#F8FAFC] border border-[#2563EB]/10 hover:shadow-xl";
+              if (isHigh) {
+                cardStyles =
+                  "bg-white border-2 border-[#EF4444] shadow-2xl xl:-mt-4 xl:mb-4 transform scale-[1.01]";
+              } else if (isDark) {
+                cardStyles =
+                  "bg-[#1E1B18] text-[#F5EBE6] border border-[#3A3530] shadow-xl";
+              }
+
+              return (
+                <motion.div
+                  key={pkg.name}
+                  variants={fadeUp}
+                  whileHover={{ y: -6 }}
+                  className={`rounded-2xl p-6 relative flex flex-col justify-between transition-all duration-300 ${cardStyles}`}
                 >
-                  <Star
-                    size={18}
-                    className={pkg.highlight ? "text-white" : "text-[#2563EB]"}
-                  />
-                </div>
-                <h3
-                  className={`font-bold text-lg mb-1 ${pkg.highlight ? "text-white" : "text-[#1C1C1C]"}`}
-                  style={{ fontFamily: "'Playfair Display', serif" }}
-                >
-                  {pkg.name}
-                </h3>
-                <p
-                  className={`text-sm mb-5 ${pkg.highlight ? "text-white/75" : "text-[#475569]/60"}`}
-                >
-                  {pkg.tagline}
-                </p>
-                <ul className="flex flex-col gap-2.5 mb-7">
-                  {pkg.features.map((f) => (
-                    <li
-                      key={f}
-                      className={`flex items-start gap-2.5 text-sm ${pkg.highlight ? "text-white/90" : "text-[#1C1C1C]/70"}`}
+                  {/* Conditional Top Floating Badges */}
+                  {pkg.badge && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                      <span
+                        className={`text-[10px] font-extrabold px-3 py-1 rounded-full shadow-md whitespace-nowrap uppercase tracking-wider ${
+                          isHigh
+                            ? "bg-[#EF4444] text-white"
+                            : isDark
+                              ? "bg-[#E6A15C] text-[#1E1B18]"
+                              : "bg-[#2563EB] text-white"
+                        }`}
+                      >
+                        {pkg.badge}
+                      </span>
+                    </div>
+                  )}
+
+                  <div>
+                    {/* Card Title & Rendered Icon */}
+                    <div className="flex items-center justify-between mb-4">
+                      <h3
+                        className={`font-bold text-lg ${isDark ? "text-[#E6A15C]" : "text-[#0F172A]"}`}
+                        style={{ fontFamily: "'Playfair Display', serif" }}
+                      >
+                        {pkg.name}
+                      </h3>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? "bg-[#E6A15C]/10" : isHigh ? "bg-[#EF4444]/10" : "bg-[#2563EB]/10"}`}
+                      >
+                        <pkg.icon
+                          size={16}
+                          className={
+                            isDark
+                              ? "text-[#E6A15C]"
+                              : isHigh
+                                ? "text-[#EF4444]"
+                                : "text-[#2563EB]"
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    {/* Dynamic Price Display Layer */}
+                    <div className="mb-5 border-b border-dashed pb-4 opacity-95">
+                      <div className="flex items-baseline gap-2">
+                        <span
+                          className={`text-3xl font-extrabold tracking-tight ${isDark ? "text-[#F5EBE6]" : "text-[#0F172A]"}`}
+                        >
+                          ${pkg.discountedPrice}
+                        </span>
+                        <span
+                          className={`text-xs line-through ${isDark ? "text-white/40" : "text-[#475569]/50"}`}
+                        >
+                          ${pkg.originalPrice}
+                        </span>
+                      </div>
+                      <p
+                        className={`text-[9px] font-bold tracking-widest mt-0.5 uppercase ${isDark ? "text-white/50" : "text-[#475569]/60"}`}
+                      >
+                        CAD • One-Time
+                      </p>
+                    </div>
+
+                    {/* Tagline Section */}
+                    <p
+                      className={`text-[10px] font-bold tracking-wider mb-4 uppercase ${isDark ? "text-[#E6A15C]/80" : "text-[#2563EB]"}`}
                     >
-                      <CheckCircle
-                        size={14}
-                        className={`flex-shrink-0 mt-0.5 ${pkg.highlight ? "text-white" : "text-[#7A9E7E]"}`}
-                      />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link to="/pricing">
-                  <Button
-                    className={`w-full font-semibold transition-all duration-200 ${
-                      pkg.highlight
-                        ? "bg-white text-[#2563EB] hover:bg-[#F8FAFC]"
-                        : "bg-[#2563EB] hover:bg-[#1E3A8A] text-white"
-                    }`}
-                  >
-                    {pkg.cta}
-                  </Button>
-                </Link>
-              </motion.div>
-            ))}
+                      {pkg.tagline}
+                    </p>
+
+                    {/* Functional Feature Mapping */}
+                    <ul className="flex flex-col gap-2.5 mb-8">
+                      {pkg.features.map((f) => (
+                        <li
+                          key={f}
+                          className={`flex items-start gap-2.5 text-xs font-medium ${isDark ? "text-white/80" : "text-[#0F172A]/80"}`}
+                        >
+                          <CheckCircle
+                            size={14}
+                            className={`flex-shrink-0 mt-0.5 ${isDark ? "text-[#E6A15C]" : isHigh ? "text-[#EF4444]" : "text-[#2563EB]"}`}
+                          />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Direct Routing Button Action */}
+                  <div className="mt-auto">
+                    <Link to="/pricing" className="w-full">
+                      <Button
+                        className={`w-full font-semibold text-xs py-4.5 rounded-xl ${
+                          isDark
+                            ? "bg-[#E6A15C] text-[#1E1B18] hover:bg-[#d4904b]"
+                            : isHigh
+                              ? "bg-[#EF4444] text-white hover:bg-[#DC2626]"
+                              : "bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+                        }`}
+                      >
+                        {pkg.cta}
+                      </Button>
+                    </Link>
+                  </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
 
+          {/* Section Footnote Navigation Toggle */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-center mt-10"
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="text-center mt-12"
           >
             <Link to="/pricing">
               <Button
@@ -1159,7 +1306,7 @@ export default function HomePage() {
                 variant="outline"
                 className="border-2 border-[#2563EB] text-[#2563EB] hover:bg-[#2563EB] hover:text-white font-semibold px-10 transition-all duration-200"
               >
-                View All Packages
+                Compare Full Enterprise Features
                 <ArrowRight size={16} className="ml-2" />
               </Button>
             </Link>

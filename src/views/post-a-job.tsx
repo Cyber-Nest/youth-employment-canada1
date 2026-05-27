@@ -721,13 +721,15 @@ export default function PostAJobPage({
                   View Job
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                className="border-blue-300 text-blue-700 hover:bg-blue-200"
-                onClick={() => window.location.reload()}
-              >
-                Post Another Job
-              </Button>
+
+              <Link to="/dashboard">
+                <Button
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-200"
+                >
+                  Go to Dashboard
+                </Button>
+              </Link>
             </div>
           </motion.div>
         </section>

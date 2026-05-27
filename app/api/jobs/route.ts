@@ -443,6 +443,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (!employerPackage.unlimitedJobs && employerPackage.remainingCredits <= 0) {
+    return NextResponse.json(
+      {
+        error: employerPackage.isFreePlan
+          ? "Your free plan limit has ended. Please upgrade your package."
+          : "No job posting credits remaining.",
+      },
+      {
+        status: 403,
+      },
+    );
+  }
+
   const typeMap: Record<string, EmploymentType> = {
     "Full-time": "Full-time",
     "Part-time": "Part-time",
@@ -467,6 +480,7 @@ export async function POST(req: NextRequest) {
     jobUniqueId,
 
     employerId: employer.id,
+    packageId: employerPackage.id,
 
     title: String(title).trim(),
 
@@ -551,13 +565,32 @@ export async function POST(req: NextRequest) {
 
   // UPDATE PACKAGE
 
+  // await packages.updateOne(
+  //   { id: employerPackage.id },
+  //   {
+  //     $inc: {
+  //       jobCredits: -1,
+  //       jobsPosted: 1,
+  //     },
+  //     $set: {
+  //       updatedAt: now,
+  //     },
+  //   },
+  // );
+
   await packages.updateOne(
-    { id: employerPackage.id },
     {
-      $inc: {
-        jobCredits: -1,
-        jobsPosted: 1,
-      },
+      id: employerPackage.id,
+    },
+    {
+      ...(employerPackage.unlimitedJobs
+        ? {}
+        : {
+            $inc: {
+              remainingCredits: -1,
+            },
+          }),
+
       $set: {
         updatedAt: now,
       },

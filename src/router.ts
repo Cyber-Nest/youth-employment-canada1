@@ -82,3 +82,5 @@ export function ScrollRestoration() {
 export function Outlet({ children }: { children?: ReactNode }) {
   return createElement(Fragment, null, children);
 }
+
+export { useRouter };
