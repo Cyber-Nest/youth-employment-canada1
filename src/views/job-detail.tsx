@@ -375,7 +375,7 @@ export default function JobDetailPage() {
                   )}
                   <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                     <DollarSign size={13} className="text-blue-500" />
-                    {job.salary} {job.salaryPeriod as any}
+                    {job.salary}/{job.salaryPeriod as any}
                   </span>
                   <span className="inline-flex items-center gap-2 text-sm text-gray-600 bg-white border border-blue-200 rounded-full px-4 py-1.5">
                     <Clock size={13} className="text-blue-500" />
