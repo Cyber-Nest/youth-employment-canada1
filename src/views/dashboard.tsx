@@ -11,12 +11,14 @@ import {
   Briefcase,
   Calendar,
   MapPin,
-  Clock,
   Plus,
   Building2,
   Package,
   TrendingUp,
-  ChevronRight,
+  Users,
+  DollarSign,
+  Crown,
+  ChevronDown,
 } from "lucide-react";
 
 // ============ SKELETON COMPONENTS (Mobile Optimized) ============
@@ -93,10 +95,12 @@ interface EmployerProfile {
   province?: string;
   packageName: string;
   packageStatus: string;
-  jobCredits: number;
-  jobsPosted: number;
+  remainingCredits: number;
+  totalCreditsPurchased: number;
+  unlimitedJobs: boolean;
+  isFreePlan: boolean;
   jobPostExpiryDays: number;
-  creditValidity: string;
+  expiresAt?: string | null;
 }
 
 interface UserData {
@@ -110,7 +114,21 @@ interface UserData {
   employerProfile?: EmployerProfile | null;
 }
 
+interface PackageData {
+  id: string;
+  packageName: string;
+  remainingCredits: number;
+  totalCreditsPurchased: number;
+  unlimitedJobs: boolean;
+  isFreePlan: boolean;
+  jobPostExpiryDays: number;
+  status: string;
+  expiresAt?: string | null;
+  purchasedAt?: string | null;
+}
+
 interface Job {
+  jobType: string;
   id: string;
   jobUniqueId: string;
   title: string;
@@ -120,96 +138,93 @@ interface Job {
   employmentType: string;
   category: string;
   status: "active" | "draft" | "closed" | "expired";
-  postedAt: string;
+  jobPostingDate: string;
   expiresAt?: string;
-  description: string;
+  createdAt?: string;
+  updatedAt?: string;
   salary?: string;
   salaryPeriod?: string;
 }
 
-// Status Badge Component - Improved
-const StatusBadge = ({ status }: { status: string }) => {
-  const config: Record<
-    string,
-    { bg: string; text: string; dot: string; label: string }
-  > = {
-    active: {
-      bg: "bg-emerald-50",
-      text: "text-emerald-700",
-      dot: "bg-emerald-500",
-      label: "Active",
-    },
-    draft: {
-      bg: "bg-gray-100",
-      text: "text-gray-600",
-      dot: "bg-gray-400",
-      label: "Draft",
-    },
-    closed: {
-      bg: "bg-rose-50",
-      text: "text-rose-700",
-      dot: "bg-rose-500",
-      label: "Closed",
-    },
-    expired: {
-      bg: "bg-amber-50",
-      text: "text-amber-700",
-      dot: "bg-amber-500",
-      label: "Expired",
-    },
-  };
-  const style = config[status] || config.draft;
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}
-    >
-      <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-      {style.label}
-    </span>
-  );
-};
+// // Status Badge Component
+// const StatusBadge = ({ status }: { status: string }) => {
+//   const config: Record<
+//     string,
+//     { bg: string; text: string; dot: string; label: string }
+//   > = {
+//     active: {
+//       bg: "bg-emerald-50",
+//       text: "text-emerald-700",
+//       dot: "bg-emerald-500",
+//       label: "Active",
+//     },
+//     draft: {
+//       bg: "bg-gray-100",
+//       text: "text-gray-600",
+//       dot: "bg-gray-400",
+//       label: "Draft",
+//     },
+//     closed: {
+//       bg: "bg-rose-50",
+//       text: "text-rose-700",
+//       dot: "bg-rose-500",
+//       label: "Closed",
+//     },
+//     expired: {
+//       bg: "bg-amber-50",
+//       text: "text-amber-700",
+//       dot: "bg-amber-500",
+//       label: "Expired",
+//     },
+//   };
+
+//   const style = config[status] || config.draft;
+
+//   return (
+//     <span
+//       className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}
+//     >
+//       <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
+//       {style.label}
+//     </span>
+//   );
+// };
 
 // ============ HELPERS ============
-const formatDate = (dateString: string) => {
+const formatDate = (dateString?: string, locale: string = "en-CA") => {
+  if (!dateString) return "N/A";
+
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-CA", {
+
+  if (isNaN(date.getTime())) {
+    return "Invalid date";
+  }
+
+  return date.toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: "America/Edmonton",
   });
 };
 
 const formatSalary = (salary?: string, period?: string) => {
   if (!salary) return null;
-  return `$${parseInt(salary).toLocaleString()}${period ? ` / ${period}` : ""}`;
-};
-
-const getRelativeTime = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-
-  const isToday =
-    date.getDate() === now.getDate() &&
-    date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear();
-
-  if (isToday) return "Today";
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "2-digit",
-    day: "2-digit",
-    year: "numeric",
-  }).format(date);
+  const parsed = Number(salary);
+  if (Number.isNaN(parsed)) return null;
+  return `${parsed.toLocaleString()}${period ? ` / ${period}` : ""}`;
 };
 
 export default function DashboardPage() {
   const [user, setUser] = useState<UserData | null>(null);
+  const [packageData, setPackageData] = useState<PackageData | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [_packageLoading, setPackageLoading] = useState(true);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [error, setError] = useState("");
-  // const [logoutLoading, setLogoutLoading] = useState(false);
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
+  const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
 
   // Fetch user data
   useEffect(() => {
@@ -233,6 +248,26 @@ export default function DashboardPage() {
     fetchUser();
   }, []);
 
+  // Fetch package data
+  useEffect(() => {
+    const fetchPackage = async () => {
+      try {
+        const response = await fetch("/api/employer/package", {
+          credentials: "include",
+        });
+        const data = await response.json();
+        if (data.success) {
+          setPackageData(data.package);
+        }
+      } catch (error) {
+        console.error("Failed to fetch package:", error);
+      } finally {
+        setPackageLoading(false);
+      }
+    };
+    fetchPackage();
+  }, []);
+
   // Fetch jobs
   useEffect(() => {
     const fetchJobs = async () => {
@@ -253,38 +288,23 @@ export default function DashboardPage() {
     fetchJobs();
   }, []);
 
-  // const handleLogout = async () => {
-  //   setLogoutLoading(true);
-  //   try {
-  //     const response = await fetch("/api/auth/logout", {
-  //       method: "POST",
-  //       credentials: "include",
-  //     });
-  //     if (response.ok) {
-  //       window.location.href = "/login";
-  //     } else {
-  //       setError("Logout failed.");
-  //     }
-  //   } catch {
-  //     setError("Logout failed.");
-  //   } finally {
-  //     setLogoutLoading(false);
-  //   }
-  // };
-
   const handleDeleteJob = async (jobId: string) => {
-    if (!confirm("Are you sure you want to close this job posting?")) return;
+    if (!confirm("Are you sure you want to delete this job posting?")) return;
+
     setDeletingJobId(jobId);
+
     try {
       const response = await fetch(`/api/jobs/${jobId}`, {
         method: "DELETE",
         credentials: "include",
       });
+
       const data = await response.json();
+
       if (data.success) {
-        setJobs(jobs.filter((job) => job.id !== jobId));
+        setJobs((prev) => prev.filter((job) => job.id !== jobId));
       } else {
-        alert(data.error || "Failed to close job");
+        alert(data.error || "Failed to delete job");
       }
     } catch {
       alert("Network error. Please try again.");
@@ -293,22 +313,63 @@ export default function DashboardPage() {
     }
   };
 
+  const handleJobStatus = async (jobId: string, currentStatus: string) => {
+    try {
+      setStatusUpdatingId(jobId);
+
+      const nextStatus = currentStatus === "active" ? "closed" : "active";
+
+      const res = await fetch(`/api/jobs/${jobId}/status`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: nextStatus,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update job");
+      }
+
+      setJobs((prev) =>
+        prev.map((job) =>
+          job.id === jobId
+            ? {
+                ...job,
+                status: nextStatus,
+              }
+            : job,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update job status");
+    } finally {
+      setStatusUpdatingId(null);
+    }
+  };
+
   if (loading) return <DashboardSkeleton />;
 
   if (error) {
     return (
-      <section className="bg-gradient-to-b from-blue-50 to-white min-h-screen flex items-center justify-center py-16 px-4">
-        <div className="bg-white rounded-2xl p-6 sm:p-10 border border-gray-100 shadow-xl max-w-md text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Briefcase size={28} className="text-red-500" />
+      <section className="bg-gradient-to-b from-slate-50 to-white min-h-screen flex items-center justify-center py-16 px-4">
+        <div className="bg-white rounded-2xl p-6 sm:p-10 border border-slate-100 shadow-xl max-w-md text-center">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Briefcase size={24} className="text-red-500" />
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-xl font-bold text-slate-900 mb-2">
             Unable to Load Dashboard
           </h1>
-          <p className="text-gray-500 mb-6">{error}</p>
+          <p className="text-slate-500 text-sm mb-6">{error}</p>
           <Button
             onClick={() => window.location.reload()}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md"
           >
             Try Again
           </Button>
@@ -318,6 +379,22 @@ export default function DashboardPage() {
   }
 
   const profile = user?.employerProfile;
+  const packageName =
+    packageData?.packageName || profile?.packageName || "Free Plan";
+  const packageStatus =
+    packageData?.status || profile?.packageStatus || "Active";
+  const remainingCredits =
+    packageData?.remainingCredits ?? profile?.remainingCredits ?? 0;
+  const totalCreditsPurchased =
+    packageData?.totalCreditsPurchased ?? profile?.totalCreditsPurchased ?? 0;
+  const unlimitedJobs =
+    packageData?.unlimitedJobs ?? profile?.unlimitedJobs ?? false;
+  const isFreePlan = packageData?.isFreePlan ?? profile?.isFreePlan ?? true;
+  const jobPostExpiryDays =
+    packageData?.jobPostExpiryDays ?? profile?.jobPostExpiryDays ?? 180;
+  const packageExpiresAt = packageData?.expiresAt ?? profile?.expiresAt ?? null;
+  const canPostJob = unlimitedJobs || remainingCredits > 0;
+
   const activeJobsCount = jobs.filter((j) => j.status === "active").length;
   const closedJobsCount = jobs.filter((j) => j.status === "closed").length;
 
@@ -327,435 +404,496 @@ export default function DashboardPage() {
         <title>Employer Dashboard | Youth Employment Canada</title>
       </Helmet>
 
-      <section className="bg-gradient-to-b from-blue-50 to-white min-h-screen py-6 sm:py-12 px-4">
+      <section className="bg-[#FAFCFF] min-h-screen py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          {/* ============ HEADER ============ */}
-          <div className="flex flex-col gap-4 sm:gap-6 md:flex-row md:items-center md:justify-between mb-6 sm:mb-8">
+          {/* HEADER */}
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-8 sm:mb-10">
             <div>
-              {/* <div className="flex items-center gap-2 text-sm text-blue-600 mb-2">
-                <span className="w-1 h-1 bg-blue-600 rounded-full" />
-                <span className="uppercase tracking-wider text-xs font-semibold">
-                  Employer Dashboard
-                </span>
-              </div> */}
               <h1
-                className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-2"
+                className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-950 mb-2"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
                 Welcome back,{" "}
                 {user?.firstName || user?.name?.split(" ")[0] || "Employer"} 👋
               </h1>
-              <p className="text-gray-500 text-sm sm:text-base">
-                Manage your job postings and track your hiring success
+              <p className="text-slate-500 text-sm font-medium">
+                Manage your jobs, credits and hiring activity from your control
+                center.
               </p>
             </div>
-            {/* <div className="flex items-center gap-2 sm:gap-3">
-              <Link to="/post-a-job">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md hover:shadow-lg transition-all rounded-xl">
-                  <Plus size={16} className="mr-1 sm:mr-2" />
-                  <span className="text-sm sm:text-base">Post Job</span>
-                </Button>
-              </Link>
-              <Button
-                onClick={handleLogout}
-                disabled={logoutLoading}
-                variant="outline"
-                className="border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl"
-              >
-                {logoutLoading ? (
-                  <div className="animate-spin h-4 w-4 border-2 border-gray-600 border-t-transparent rounded-full" />
-                ) : (
-                  <>
-                    <LogOut size={16} className="mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">Logout</span>
-                  </>
-                )}
-              </Button>
-            </div> */}
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-            {/* ============ LEFT COLUMN - JOBS ============ */}
-            <div className="flex-1 space-y-5 sm:space-y-6">
-              {/* Quick Action Banner */}
-              <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-5 sm:p-6 text-white shadow-lg">
-                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-white/10 rounded-full" />
-                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-24 h-24 bg-white/10 rounded-full" />
-                <div className="relative">
-                  <h3 className="text-lg sm:text-xl font-bold mb-1">
-                    Ready to hire?
-                  </h3>
-                  <p className="text-blue-100 text-sm sm:text-base mb-4">
-                    Post a job and reach qualified youth across Canada.
-                  </p>
-                  <Link to="/post-a-job">
-                    <Button className="bg-white text-blue-700 hover:bg-blue-200 font-semibold rounded-xl shadow-md">
-                      <Plus size={16} className="mr-2" />
-                      Create New Job Posting
-                    </Button>
-                  </Link>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+            {/* LEFT - Workspace Area */}
+            <div className="lg:col-span-2 space-y-6 w-full">
+              {/* ACTION BANNER */}
+              <div
+                className={`relative overflow-hidden rounded-2xl p-6 sm:p-7 text-white shadow-xl border ${
+                  canPostJob
+                    ? "bg-gradient-to-br from-blue-600 to-indigo-700 border-blue-700/20"
+                    : "bg-gradient-to-br from-slate-900 to-slate-950 border-slate-900"
+                }`}
+              >
+                <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/5 rounded-full blur-xl pointer-events-none" />
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/5 rounded-full blur-lg pointer-events-none" />
+
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                  <div className="max-w-md">
+                    <h3 className="text-xl font-bold tracking-tight mb-1.5">
+                      {canPostJob
+                        ? "Ready to scale your team?"
+                        : "Hiring Paused • No Credits Left"}
+                    </h3>
+                    <p className="text-blue-100/80 text-sm leading-relaxed">
+                      {canPostJob
+                        ? "Post a new job requisition now and leverage our active community network instantly."
+                        : "Your active credits are exhausted. Re-up or update your existing platform plan to resume postings."}
+                    </p>
+                  </div>
+
+                  <div className="shrink-0 w-full sm:w-auto">
+                    {canPostJob ? (
+                      <Link to="/post-a-job" className="block w-full">
+                        <Button className="w-full bg-white text-blue-700 hover:bg-blue-50 font-semibold px-5 py-5 rounded-xl shadow-md border border-white transition-all">
+                          <Plus size={16} className="mr-2 stroke-[2.5]" />
+                          Create Job Posting
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link to="/pricing" className="block w-full">
+                        <Button className="w-full bg-blue-600 text-white hover:bg-blue-700 font-semibold px-5 py-5 rounded-xl shadow-md transition-all">
+                          Upgrade Account
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Recent Jobs Section */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-5 sm:mb-6">
+              {/* CARD-STYLE RECENT JOBS MANAGEMENT CARD */}
+              <div className="bg-transparent space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 border border-slate-100 rounded-2xl shadow-sm">
                   <div>
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">
-                      Recent Jobs
+                    <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+                      Recent Job Openings
                     </h2>
-                    <p className="text-xs sm:text-sm text-gray-400 mt-0.5">
-                      Your latest job postings
+
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Manage, monitor and update your active job postings
                     </p>
                   </div>
-                  <span className="text-xs sm:text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full">
-                    {jobs.length} Total
+
+                  <span className="self-start sm:self-center text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full tracking-wide">
+                    {jobs.length} Total Jobs
                   </span>
                 </div>
 
                 {jobsLoading ? (
-                  <div className="space-y-3 sm:space-y-4">
-                    {[1, 2, 3].map((i) => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {[1, 2].map((i) => (
                       <div
                         key={i}
-                        className="border border-gray-100 rounded-xl p-4"
+                        className="bg-white border border-blue-100/50 rounded-2xl p-6 h-64 animate-pulse space-y-4"
                       >
-                        <div className="animate-pulse">
-                          <div className="flex justify-between items-start mb-3">
-                            <div className="space-y-2 flex-1">
-                              <div className="h-5 w-40 bg-gray-200 rounded" />
-                              <div className="h-3 w-28 bg-gray-200 rounded" />
-                            </div>
-                            <div className="flex gap-2">
-                              <div className="h-8 w-16 bg-gray-200 rounded-lg" />
-                              <div className="h-8 w-16 bg-gray-200 rounded-lg" />
-                              <div className="h-8 w-16 bg-gray-200 rounded-lg" />
-                            </div>
-                          </div>
-                          <div className="flex gap-4">
-                            <div className="h-3 w-24 bg-gray-200 rounded" />
-                            <div className="h-3 w-20 bg-gray-200 rounded" />
-                          </div>
+                        <div className="flex justify-between items-center">
+                          <div className="h-5 w-1/2 bg-slate-100 rounded-lg" />
+                          <div className="h-6 w-16 bg-slate-100 rounded-full" />
+                        </div>
+                        <div className="h-4 w-1/3 bg-slate-100 rounded-lg" />
+                        <div className="grid grid-cols-2 gap-3 pt-2">
+                          <div className="h-4 bg-slate-100 rounded-md" />
+                          <div className="h-4 bg-slate-100 rounded-md" />
+                          <div className="h-4 bg-slate-100 rounded-md" />
+                          <div className="h-4 bg-slate-100 rounded-md" />
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : jobs.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Briefcase size={32} className="text-gray-400" />
+                  <div className="text-center py-16 border border-dashed border-blue-200/60 rounded-2xl bg-blue-50/10">
+                    <div className="w-14 h-14 bg-blue-50 text-blue-600 border border-blue-100 shadow-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Briefcase size={22} />
                     </div>
-                    <p className="text-gray-600 font-medium mb-1">
-                      No job postings yet
+                    <p className="text-slate-900 font-bold mb-1">
+                      No positions archived yet
                     </p>
-                    <p className="text-sm text-gray-400 mb-5">
-                      Your posted jobs will appear here
+                    <p className="text-xs text-slate-400 max-w-xs mx-auto mb-5 leading-relaxed">
+                      Deploy your first placement campaign to start sourcing
+                      talent instantly.
                     </p>
-                    <Link to="/post-a-job">
-                      <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
-                        <Plus size={16} className="mr-2" />
-                        Post Your First Job
-                      </Button>
-                    </Link>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  /* RESPONSIVE BLUE-THEMED CARD GRID SYSTEM */
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {jobs.slice(0, 10).map((job) => (
                       <div
                         key={job.id}
-                        className="group bg-white border border-gray-100 hover:border-blue-200 rounded-xl transition-all duration-200 hover:shadow-md overflow-hidden"
+                        className="group bg-white border border-slate-100 hover:border-blue-200/80 rounded-2xl shadow-sm hover:shadow-md flex flex-col justify-between p-5 sm:p-6 transition-all duration-300 relative overflow-hidden"
                       >
-                        {/* Card Content */}
-                        <div className="p-4">
-                          {/* Header Row - Title & Status & Actions */}
-                          <div className="flex items-start justify-between gap-3 mb-3">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <h3 className="font-semibold text-gray-900 text-base sm:text-lg truncate">
-                                {job.title}
-                              </h3>
-                              <StatusBadge status={job.status} />
-                            </div>
+                        {/* Top Accent line on card hover */}
+                        {/* <div className="absolute top-0 inset-x-0 h-[3px] bg-blue-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" /> */}
 
-                            {/* Action Buttons - Desktop */}
-                            <div className="hidden sm:flex items-center gap-1">
-                              <Link to={`/edit-job/${job.id}`}>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 px-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                >
-                                  <Edit size={14} className="mr-1" />
-                                  Edit
-                                </Button>
-                              </Link>
-                              <Link to={`/jobs/${job.id}`}>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 px-3 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                >
-                                  <Eye size={14} className="mr-1" />
-                                  View
-                                </Button>
-                              </Link>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 px-3 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                onClick={() => handleDeleteJob(job.id)}
-                                disabled={deletingJobId === job.id}
-                              >
-                                {deletingJobId === job.id ? (
-                                  <div className="animate-spin h-3 w-3 border-2 border-red-600 border-t-transparent rounded-full" />
-                                ) : (
-                                  <>
-                                    <Trash2 size={14} className="mr-1" />
-                                    Close
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </div>
+                        <div>
+                          {/* TOP HEADER: Title & Dynamic Status Dropdown/Badge */}
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <h3 className="font-bold text-slate-900 text-lg tracking-tight group-hover:text-blue-600 transition-colors duration-200 cursor-pointer truncate flex-1">
+                              {job.title}
+                            </h3>
 
-                          {/* Company & Location Row */}
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-2">
-                            <div className="flex items-center gap-1.5">
-                              <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
-                                <Building2
-                                  size={10}
-                                  className="text-gray-500"
-                                />
-                              </div>
-                              <span className="text-sm text-gray-600">
-                                {job.company}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
-                                <MapPin size={10} className="text-gray-500" />
-                              </div>
-                              <span className="text-sm text-gray-500">
-                                {job.location?.split(",")[0] || job.province}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
-                                <Calendar size={10} className="text-gray-500" />
-                              </div>
-                              <span className="text-sm text-gray-500">
-                                {getRelativeTime(job.postedAt)}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Salary & Expiry Row */}
-                          <div className="flex flex-wrap items-center justify-between gap-2 mt-2 pt-2 border-t border-gray-50">
-                            {formatSalary(job.salary, job.salaryPeriod) ? (
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                                  {formatSalary(job.salary, job.salaryPeriod)}
-                                </span>
-                              </div>
-                            ) : (
-                              <div />
-                            )}
-                            {job.expiresAt && (
-                              <div className="flex items-center gap-1">
-                                <Clock size={10} className="text-gray-400" />
-                                <span className="text-xs text-gray-400">
-                                  Expires {formatDate(job.expiresAt)}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Action Buttons - Mobile Only */}
-                          <div className="flex items-center gap-2 mt-3 pt-2 sm:hidden">
-                            <Link to={`/edit-job/${job.id}`} className="flex-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="w-full h-9 text-blue-600 border-blue-200 hover:bg-blue-50 rounded-lg text-xs"
-                              >
-                                <Edit size={12} className="mr-1" />
-                                Edit
-                              </Button>
-                            </Link>
-                            <Link
-                              to={`/jobs/${job.id}`}
-                              target="_blank"
-                              className="flex-1"
+                            {/* Standard Status Controls Button with Adaptive Sizing */}
+                            <button
+                              onClick={() =>
+                                handleJobStatus(job.id, job.status)
+                              }
+                              disabled={statusUpdatingId === job.id}
+                              className={`shrink-0 flex items-center gap-1 text-[11px] font-extrabold px-3 py-1 rounded-full border transition-all duration-200 shadow-sm ${
+                                job.status === "active"
+                                  ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                                  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                              }`}
                             >
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="w-full h-9 text-green-600 border-green-200 hover:bg-green-50 rounded-lg text-xs"
-                              >
-                                <Eye size={12} className="mr-1" />
-                                View
-                              </Button>
-                            </Link>
+                              {statusUpdatingId === job.id ? (
+                                <div className="animate-spin h-3 w-3 border-2 border-blue-600 border-t-transparent rounded-full" />
+                              ) : (
+                                <>
+                                  <span
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                      job.status === "active"
+                                        ? "bg-blue-500"
+                                        : "bg-slate-400"
+                                    }`}
+                                  />
+                                  <span className="uppercase tracking-wider text-[10px]">
+                                    {job.status}
+                                  </span>
+                                  <ChevronDown
+                                    size={11}
+                                    className="opacity-70"
+                                  />
+                                </>
+                              )}
+                            </button>
+                          </div>
+
+                          {/* Subtitle: Corporate Identifier */}
+                          <p className="text-slate-500 font-semibold text-xs flex items-center gap-1.5 mb-5">
+                            <Building2 size={13} className="text-blue-600/70" />
+                            <span>{job.company}</span>
+                          </p>
+
+                          {/* 2-Column Content Data Grid */}
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-3.5 text-slate-600 text-xs font-medium mb-5">
+                            <span className="flex items-center gap-1.5 truncate">
+                              <MapPin size={14} className="text-blue-600/50" />
+                              {job.location?.split(",")[0] || job.province}
+                            </span>
+                            <span className="flex items-center gap-1.5 truncate">
+                              <Briefcase
+                                size={14}
+                                className="text-blue-600/50"
+                              />
+                              {job.jobType || "Full-time"}
+                            </span>
+                            <span className="flex items-center gap-1.5 font-bold text-slate-800 truncate">
+                              <DollarSign
+                                size={14}
+                                className="text-blue-600/60 stroke-[2.5]"
+                              />
+                              {job.salary
+                                ? formatSalary(job.salary, job.salaryPeriod)
+                                : "N/A"}
+                            </span>
+                            <span className="flex items-center gap-1.5 text-slate-400 truncate text-[11px]">
+                              <Calendar size={14} className="text-slate-300" />
+                              Posted: {formatDate(job.jobPostingDate)}
+                            </span>
+                          </div>
+
+                          {/* Tags Section */}
+                          <div className="flex flex-wrap items-center gap-1.5 mb-6">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold tracking-wider text-blue-700 bg-blue-50/80 border border-blue-100 px-2 py-0.5 rounded-md uppercase">
+                              JOBI-ID
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md tracking-wide">
+                              #
+                              {job.id?.slice(-5).toUpperCase() || "REQUISITION"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* BOTTOM ACTION BUTTONS: Modern Clean Layout */}
+                        <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 mt-auto">
+                          <Link
+                            to={`/jobs/${job.id}`}
+                            target="_blank"
+                            className="w-full"
+                          >
                             <Button
                               size="sm"
                               variant="outline"
-                              className="flex-1 h-9 text-red-600 border-red-200 hover:bg-red-50 rounded-lg text-xs"
-                              onClick={() => handleDeleteJob(job.id)}
-                              disabled={deletingJobId === job.id}
+                              className="w-full h-9 text-xs font-bold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 rounded-xl shadow-sm transition-all flex items-center justify-center gap-1"
                             >
-                              {deletingJobId === job.id ? (
-                                <div className="animate-spin h-3 w-3 border-2 border-red-600 border-t-transparent rounded-full" />
-                              ) : (
-                                <>
-                                  <Trash2 size={12} className="mr-1" />
-                                  Close
-                                </>
-                              )}
+                              <Eye
+                                size={13}
+                                className="text-slate-400 group-hover:text-blue-500"
+                              />
+                              View
                             </Button>
-                          </div>
+                          </Link>
+
+                          <Link to={`/edit-job/${job.id}`} className="w-full">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full h-9 text-xs font-bold text-slate-700 border-slate-200 bg-white hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 rounded-xl shadow-sm transition-all flex items-center justify-center gap-1"
+                            >
+                              <Edit
+                                size={13}
+                                className="text-slate-400 group-hover:text-blue-500"
+                              />
+                              Edit
+                            </Button>
+                          </Link>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteJob(job.id)}
+                            disabled={deletingJobId === job.id}
+                            className="h-9 text-xs font-bold text-red-600 border-red-100 bg-red-50/30 hover:bg-red-50 hover:border-red-200 rounded-xl w-full flex items-center justify-center gap-1 transition-all"
+                          >
+                            {deletingJobId === job.id ? (
+                              <div className="animate-spin h-3 w-3 border-2 border-red-600 border-t-transparent rounded-full" />
+                            ) : (
+                              <>
+                                <Trash2 size={13} className="text-red-500/80" />
+                                Delete
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
-
-                {jobs.length > 5 && !jobsLoading && jobs.length > 0 && (
-                  <div className="mt-5 pt-2 text-center border-t border-gray-100">
-                    <Link to="/employer/jobs">
-                      <Button
-                        variant="link"
-                        className="text-blue-600 text-sm font-medium"
-                      >
-                        View all {jobs.length} jobs
-                        <ChevronRight size={14} className="ml-1 inline" />
-                      </Button>
-                    </Link>
-                  </div>
-                )}
               </div>
             </div>
 
-            {/* ============ RIGHT COLUMN - STATS & PROFILE ============ */}
-            <div className="lg:w-96 space-y-5 sm:space-y-6">
-              {/* Stats Cards Row (Mobile: 2 columns) */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <TrendingUp size={16} className="text-blue-600" />
+            {/* RIGHT - Context Analytics Columns */}
+            <div className="space-y-6 w-full lg:w-auto">
+              {/* PLATFORM METRICS GRID — BRAND BLUE THEME */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Active Jobs Card */}
+                <div className="bg-white rounded-xl p-4 border border-slate-100 hover:border-blue-300 shadow-sm hover:shadow-md hover:shadow-blue-500/5 transition-all duration-300 group">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      Active Jobs
+                    </span>
+                    <div className="w-7 h-7 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                      <TrendingUp size={14} className="stroke-[2.5]" />
                     </div>
                   </div>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  <p className="text-3xl font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors duration-300">
                     {activeJobsCount}
                   </p>
-                  <p className="text-xs text-gray-500">Active Jobs</p>
+                  <p className="text-[11px] font-medium text-slate-400 mt-1">
+                    Currently live postings
+                  </p>
                 </div>
-                <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Briefcase size={16} className="text-gray-600" />
+
+                {/* Closed Jobs Card */}
+                <div className="bg-white rounded-xl p-4 border border-slate-100 hover:border-blue-300 shadow-sm hover:shadow-md hover:shadow-blue-500/5 transition-all duration-300 group">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      Closed Jobs
+                    </span>
+                    <div className="w-7 h-7 bg-blue-50/60 text-blue-500/80 rounded-lg flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                      <Briefcase size={14} className="stroke-[2]" />
                     </div>
                   </div>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  <p className="text-3xl font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors duration-300">
                     {closedJobsCount}
                   </p>
-                  <p className="text-xs text-gray-500">Closed Jobs</p>
-                </div>
-                {/* <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                      <DollarSign size={16} className="text-green-600" />
-                    </div>
-                  </div>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    {profile?.jobCredits ?? 0}
+                  <p className="text-[11px] font-medium text-slate-400 mt-1">
+                    Closed or archived jobs
                   </p>
-                  <p className="text-xs text-gray-500">Credits Left</p>
-                </div> */}
-                {/* <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Users size={16} className="text-purple-600" />
+                </div>
+
+                {/* Credits Left Card - Main Interactive Blue Focus */}
+                <div className="bg-gradient-to-br from-blue-50/50 via-white to-white rounded-xl p-4 border border-blue-100 hover:border-blue-400 shadow-sm hover:shadow-md hover:shadow-blue-500/5 transition-all duration-300 group relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-12 h-12 bg-blue-500/5 rounded-full blur-md pointer-events-none" />
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-bold text-blue-600/80 uppercase tracking-wider">
+                      Credits Left
+                    </span>
+                    <div className="w-7 h-7 bg-blue-600 text-white rounded-lg flex items-center justify-center group-hover:bg-blue-700 transition-colors shadow-sm">
+                      <DollarSign size={14} className="stroke-[2.5]" />
                     </div>
                   </div>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  <p className="text-3xl font-black text-blue-600 tracking-tight">
+                    {unlimitedJobs ? "∞" : remainingCredits}
+                  </p>
+                  <p className="text-[11px] font-medium text-slate-400 mt-1">
+                    Available job posting credits
+                  </p>
+                </div>
+
+                {/* Total Jobs Card */}
+                <div className="bg-white rounded-xl p-4 border border-slate-100 hover:border-blue-300 shadow-sm hover:shadow-md hover:shadow-blue-500/5 transition-all duration-300 group">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      Total Jobs
+                    </span>
+                    <div className="w-7 h-7 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                      <Users size={14} className="stroke-[2]" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors duration-300">
                     {jobs.length}
                   </p>
-                  <p className="text-xs text-gray-500">Total Jobs</p>
-                </div> */}
+                  <p className="text-[11px] font-medium text-slate-400 mt-1">
+                    All jobs created so far
+                  </p>
+                </div>
               </div>
 
-              {/* Company Profile Card */}
-              <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
-                <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                  <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
-                    <Building2 size={16} className="text-blue-600 sm:text-lg" />
+              {/* COMPANY DETAILS SECTION */}
+              <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+                <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-50">
+                  <div className="p-1.5 bg-slate-50 border border-slate-100 rounded-lg text-slate-700">
+                    <Building2 size={15} />
                   </div>
-                  <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
-                    Company Profile
+                  <h3 className="font-bold text-slate-900 text-sm tracking-tight">
+                    Corporate Identity
                   </h3>
                 </div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+
+                <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mb-3">
                   {profile?.businessName || user?.name || "Employer"}
                 </h2>
-                <div className="space-y-2 text-xs sm:text-sm">
-                  <div className="flex justify-between py-1.5 border-b border-gray-50">
-                    <span className="text-gray-500">Email</span>
-                    <span className="font-medium text-gray-700 truncate max-w-[180px]">
+
+                <div className="space-y-2 text-xs font-medium">
+                  <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                    <span className="text-slate-400">Primary Contact</span>
+                    <span className="text-slate-700 truncate max-w-[170px]">
                       {user?.email}
                     </span>
                   </div>
+
                   {profile?.phoneNumber && (
-                    <div className="flex justify-between py-1.5 border-b border-gray-50">
-                      <span className="text-gray-500">Phone</span>
-                      <span className="font-medium text-gray-700">
+                    <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                      <span className="text-slate-400">Phone Matrix</span>
+                      <span className="text-slate-700">
                         {profile.phoneNumber}
                       </span>
                     </div>
                   )}
+
                   {profile?.province && (
-                    <div className="flex justify-between py-1.5">
-                      <span className="text-gray-500">Location</span>
-                      <span className="font-medium text-gray-700">
-                        {profile.province}
-                      </span>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-slate-400">Jurisdiction</span>
+                      <span className="text-slate-700">{profile.province}</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Package Details Card */}
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-lg text-white">
-                <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                  <div className="p-1.5 bg-white/20 rounded-lg">
-                    <Package size={16} className="sm:text-lg" />
+              {/* PREMIUM PACKAGE COMPONENT CARD */}
+              <div className="bg-gradient-to-b from-blue-900 to-blue-950 border border-slate-800 rounded-2xl p-5 shadow-xl text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-xl pointer-events-none" />
+
+                <div className="flex items-center gap-2.5 mb-5">
+                  <div className="p-1.5 bg-white/10 rounded-lg border border-white/5 text-blue-400">
+                    <Package size={15} />
                   </div>
-                  <h3 className="font-semibold text-sm sm:text-base">
-                    Current Package
+
+                  <h3 className="font-bold text-sm tracking-tight text-slate-200">
+                    Current Employer Plan
                   </h3>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold mb-3">
-                  {profile?.packageName || "Free Trial"}
-                </p>
-                <div className="space-y-2 text-xs sm:text-sm">
-                  <div className="flex justify-between items-center py-1 border-b border-white/20">
-                    <span className="text-blue-100">Status</span>
-                    <span className="font-semibold px-2 py-0.5 bg-white/20 rounded-full text-xs">
-                      {profile?.packageStatus || "Active"}
+
+                <div className="flex items-baseline justify-between mb-4">
+                  <p className="text-2xl font-black text-white tracking-tight">
+                    {packageName}
+                  </p>
+
+                  {isFreePlan && (
+                    <span className="text-[10px] tracking-wider bg-white/10 border border-white/10 px-2.5 py-0.5 rounded-md font-bold text-slate-300 uppercase">
+                      Free Plan
                     </span>
-                  </div>
-                  {/* <div className="flex justify-between items-center py-1 border-b border-white/20">
-                    <span className="text-blue-100">Credits Left</span>
-                    <span className="font-bold text-lg">
-                      {profile?.jobCredits ?? 0}
+                  )}
+
+                  {unlimitedJobs && (
+                    <span className="text-[10px] tracking-wider bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-md font-extrabold flex items-center gap-1 uppercase">
+                      <Crown size={10} className="fill-current" />
+                      Unlimited
                     </span>
-                  </div>
-                  <div className="flex justify-between items-center py-1">
-                    <span className="text-blue-100">Ad Duration</span>
-                    <span className="font-semibold">
-                      {profile?.jobPostExpiryDays ?? 180} days
-                    </span>
-                  </div> */}
+                  )}
                 </div>
+
+                <div className="space-y-2.5 text-xs font-medium text-slate-300">
+                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                    <span className="text-slate-400">Package Status</span>
+
+                    <span className="font-bold px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-md text-[11px]">
+                      {packageStatus}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                    <span className="text-slate-400">Remaining Credits</span>
+
+                    <span className="font-extrabold text-white">
+                      {unlimitedJobs
+                        ? "Unlimited Jobs"
+                        : `${remainingCredits} Credits`}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                    <span className="text-slate-400">
+                      Total Credits Purchased
+                    </span>
+
+                    <span className="text-slate-100">
+                      {totalCreditsPurchased}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                    <span className="text-slate-400">Purchased On</span>
+
+                    <span className="text-slate-100">
+                      {formatDate(packageData?.purchasedAt || "")}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                    <span className="text-slate-400">Job Duration</span>
+
+                    <span className="text-slate-100">
+                      {jobPostExpiryDays} Days
+                    </span>
+                  </div>
+
+                  {packageExpiresAt && (
+                    <div className="flex justify-between items-center py-1.5">
+                      <span className="text-slate-400">Package Expiry</span>
+
+                      <span className="text-amber-400 font-semibold">
+                        {formatDate(packageExpiresAt)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {!canPostJob && (
+                  <Link to="/pricing" className="block mt-5">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl shadow-lg text-xs">
+                      Upgrade Plan
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
           </div>

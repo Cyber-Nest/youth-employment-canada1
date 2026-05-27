@@ -1,21 +1,76 @@
-import { Helmet } from '@dr.pogodin/react-helmet';
-import { Link } from '@/router';
-import { motion } from 'motion/react';
-import { CheckCircle, Star, Zap, Building2, HeartHandshake } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+"use client";
+
+import { useEffect, useState } from "react";
+import { Helmet } from "@dr.pogodin/react-helmet";
+import { useRouter } from "@/router";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  CheckCircle,
+  Star,
+  Zap,
+  Building2,
+  ShieldCheck,
+  Crown,
+  X,
+  CreditCard,
+  Lock,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut" as const,
+    },
+  },
 };
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.1 } } };
+
+const stagger = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
 
 function OrganicShape({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-      <circle cx="200" cy="200" r="180" stroke="currentColor" strokeWidth="1" opacity="0.15" />
-      <circle cx="200" cy="200" r="130" stroke="currentColor" strokeWidth="1" opacity="0.12" />
-      <circle cx="200" cy="200" r="80" stroke="currentColor" strokeWidth="1.5" opacity="0.1" />
+    <svg
+      viewBox="0 0 400 400"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle
+        cx="200"
+        cy="200"
+        r="180"
+        stroke="currentColor"
+        strokeWidth="1"
+        opacity="0.15"
+      />
+      <circle
+        cx="200"
+        cy="200"
+        r="130"
+        stroke="currentColor"
+        strokeWidth="1"
+        opacity="0.12"
+      />
+      <circle
+        cx="200"
+        cy="200"
+        r="80"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        opacity="0.1"
+      />
       <circle cx="200" cy="200" r="30" fill="currentColor" opacity="0.08" />
     </svg>
   );
@@ -24,169 +79,569 @@ function OrganicShape({ className }: { className?: string }) {
 const packages = [
   {
     icon: Star,
-    name: 'Basic Job Posting',
-    price: 'Contact for Pricing',
-    tagline: 'Perfect for getting started',
+    name: "Starter",
+    originalPrice: 25,
+    discountedPrice: 12.5,
+    tagline: "FEATURES OF STARTER PLAN",
     features: [
-      'Single job listing',
-      '30-day active posting',
-      'Standard search visibility',
-      'Applicant email notifications',
-      'Basic applicant tracking',
+      "Job Post Expiry - 180 Days",
+      "Credit Never Expire",
+      "3 Job Posting",
     ],
-    cta: 'Get Started',
+    cta: "Select Package",
     highlight: false,
-    badge: null,
+    badge: "50% OFF",
   },
   {
     icon: Zap,
-    name: 'Featured Job Posting',
-    price: 'Contact for Pricing',
-    tagline: 'Maximum visibility for your listing',
+    name: "Deluxe",
+    originalPrice: 95,
+    discountedPrice: 47.5,
+    tagline: "FEATURES OF DELUXE PLAN",
     features: [
-      'Highlighted listing placement',
-      '60-day active posting',
-      'Priority search results',
-      'Featured badge on listing',
-      'Applicant management tools',
-      'Email & dashboard notifications',
+      "Job Post Expiry - 180 Days",
+      "Credit Never Expire",
+      "5 Job Posting",
     ],
-    cta: 'Post Featured',
+    cta: "Select Package",
     highlight: true,
-    badge: 'Most Popular',
+    badge: "Most Popular • 50% OFF",
   },
   {
     icon: Building2,
-    name: 'Employer Branding Package',
-    price: 'Contact for Pricing',
-    tagline: 'Build your Indigenous employer brand',
+    name: "Ultimate",
+    originalPrice: 195,
+    discountedPrice: 97.5,
+    tagline: "FEATURES OF ULTIMATE PLAN",
     features: [
-      'Dedicated company profile page',
-      'Multiple job listings included',
-      'Logo & banner placement',
-        'Youth hiring statement',
-      'Priority customer support',
-      'Enhanced search visibility',
+      "Job Post Expiry - 180 Days",
+      "Credit Never Expire",
+      "10 Job Posting",
     ],
-    cta: 'Build Your Brand',
+    cta: "Select Package",
     highlight: false,
-    badge: null,
+    badge: "50% OFF",
   },
   {
-    icon: HeartHandshake,
-    name: 'Monthly Hiring Support',
-    price: 'Contact for Pricing',
-    tagline: 'Full-service hiring partnership',
+    icon: ShieldCheck,
+    name: "Pro Plan",
+    originalPrice: 380,
+    discountedPrice: 190,
+    tagline: "FEATURES OF PRO PLAN",
     features: [
-      'Unlimited job postings',
-      'Dedicated account manager',
-      'Full applicant management suite',
-      'Monthly performance reports',
-        'Youth hiring consultation',
-      'Priority featured placement',
-      'Custom employer profile',
+      "Job Post Expiry - 180 Days",
+      "Credit Never Expire",
+      "20 Job Posting",
     ],
-    cta: 'Contact Us',
+    cta: "Select Package",
     highlight: false,
-    badge: 'Best Value',
+    badge: "Best Value • 50% OFF",
+  },
+  {
+    icon: Crown,
+    name: "Unlimited",
+    originalPrice: 1350,
+    discountedPrice: 675,
+    tagline: "FEATURES OF UNLIMITED PLAN",
+    features: [
+      "Job Post Expiry - 180 Days",
+      "Credit Expire 1 Year",
+      "Unlimited Jobs Posting",
+    ],
+    cta: "Select Package",
+    highlight: false,
+    darkVariant: true,
+    badge: "Mega Deal • 50% OFF",
   },
 ];
 
 const faqs = [
-  { q: 'How long are job postings active?', a: 'Basic postings are active for 30 days, Featured postings for 60 days. Monthly Hiring Support includes unlimited postings with flexible durations.' },
-  { q: 'Can I edit my job posting after it\'s live?', a: 'Yes, you can edit your job posting at any time through your employer dashboard.' },
-  { q: 'How do I receive applications?', a: 'Applications are delivered to your suggested mode from Job seekers.' },
-  { q: 'Is Youth Employment Canada only for young-led businesses?', a: 'No — Youth Employment Canada welcomes all employers who are committed to hiring young talent and supporting their growth across Canada.' },
+  {
+    q: "How long are job postings active?",
+    a: "Postings are active for 180 days across most standard plans.",
+  },
+  {
+    q: "Can I edit my job posting after it's live?",
+    a: "Yes, you can edit your job posting anytime through your employer dashboard.",
+  },
+  {
+    q: "Do credits expire?",
+    a: "Starter, Deluxe, Ultimate, and Pro credits never expire. Unlimited plan remains valid for 1 year.",
+  },
+  {
+    q: "Can I purchase the same package again?",
+    a: "Yes. Credits are added to your existing account automatically.",
+  },
 ];
 
 export default function PricingPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
+
+  // Modal states
+  const [selectedPkg, setSelectedPkg] = useState<(typeof packages)[0] | null>(
+    null,
+  );
+
+  useEffect(() => {
+    fetch("/api/auth/me", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setUser(data.user || null);
+      })
+      .catch(() => {
+        setUser(null);
+      });
+  }, []);
+
+  // initial check before opening modal
+  const handleInitiatePurchase = (pkg: (typeof packages)[0]) => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    if (user.accountType !== "employer") {
+      alert("Only employers can purchase packages");
+      return;
+    }
+
+    // Saare logic checks pass hone ke baad modal open hoga
+    setSelectedPkg(pkg);
+  };
+
+  // actual function triggered from within the modal
+  const handleConfirmPurchase = async () => {
+    if (!selectedPkg) return;
+    const packageName = selectedPkg.name;
+
+    try {
+      setLoadingPackage(packageName);
+
+      const response = await fetch("/api/employer/package/purchase", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          packageName,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to activate package");
+      }
+
+      alert(`${packageName} package activated successfully`);
+      setSelectedPkg(null); // Close modal
+      router.push("/dashboard");
+    } catch (error: any) {
+      alert(error.message || "Something went wrong");
+    } finally {
+      setLoadingPackage(null);
+    }
+  };
+
   return (
     <>
       <Helmet>
         <title>Pricing & Packages — Youth Employment Canada</title>
-        <meta name="description" content="Flexible employer packages for every hiring need. From single job postings to full monthly hiring support — Youth Employment Canada has a plan for you." />
+        <meta
+          name="description"
+          content="Flexible employer packages with limited-time 50% off."
+        />
       </Helmet>
 
-      {/* Hero */}
+      {/* HERO */}
       <section className="bg-[#F8FAFC] py-16 lg:py-24 relative overflow-hidden">
         <OrganicShape className="absolute -right-24 top-1/2 -translate-y-1/2 w-[400px] h-[400px] text-[#2563EB] pointer-events-none" />
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div variants={stagger} initial="hidden" animate="visible">
-            <motion.p variants={fadeUp} className="text-[#2563EB] font-semibold text-sm uppercase tracking-widest mb-3">Employer Packages</motion.p>
-            <motion.h1 variants={fadeUp} className="text-5xl lg:text-6xl font-bold text-[#0F172A] mb-5" style={{ fontFamily: "'Playfair Display', serif" }}>
+            <div className="inline-flex items-center gap-2 bg-[#EF4444]/10 text-[#EF4444] px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4 animate-pulse">
+              🔥 Limited Time Offer: 50% OFF All Packages
+            </div>
+
+            <motion.h1
+              variants={fadeUp}
+              className="text-4xl lg:text-6xl font-bold text-[#0F172A] mb-5"
+              style={{
+                fontFamily: "'Playfair Display', serif",
+              }}
+            >
               Packages for Every Hiring Need
             </motion.h1>
-            <motion.p variants={fadeUp} className="text-[#475569]/70 text-lg max-w-2xl mx-auto leading-relaxed">
-              Whether you're posting your first job or building a long-term youth hiring strategy, we have a package designed for you. Contact us for current pricing.
+
+            <motion.p
+              variants={fadeUp}
+              className="text-[#475569]/70 text-lg max-w-2xl mx-auto leading-relaxed"
+            >
+              Choose the perfect package for your hiring needs.
             </motion.p>
           </motion.div>
         </div>
       </section>
 
-      {/* Packages */}
-      <section className="bg-white py-8 lg:py-16 pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-            {packages.map((pkg) => (
-              <motion.div
-                key={pkg.name}
-                variants={fadeUp}
-                whileHover={{ y: -5 }}
-                className={`rounded-2xl p-8 relative transition-shadow duration-200 ${
-                  pkg.highlight
-                    ? 'bg-[#2563EB] text-white ring-2 ring-[#2563EB] shadow-2xl lg:-mt-4 lg:mb-4'
-                    : 'bg-[#F8FAFC] border border-[#2563EB]/10 hover:shadow-lg'
-                }`}
-              >
-                {pkg.badge && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <span className={`text-xs font-bold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap ${pkg.highlight ? 'bg-[#0F172A] text-white' : 'bg-[#2563EB] text-white'}`}>
-                      {pkg.badge}
-                    </span>
+      {/* PACKAGES */}
+      <section className="bg-white py-12 pb-24">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 items-stretch"
+          >
+            {packages.map((pkg) => {
+              let cardStyles =
+                "bg-[#F8FAFC] border border-[#2563EB]/10 hover:shadow-xl";
+
+              if (pkg.highlight) {
+                cardStyles =
+                  "bg-white border-2 border-[#EF4444] shadow-2xl xl:-mt-4 xl:mb-4 transform scale-[1.02]";
+              } else if (pkg.darkVariant) {
+                cardStyles =
+                  "bg-[#1E1B18] text-[#F5EBE6] border border-[#3A3530] shadow-xl";
+              }
+
+              return (
+                <motion.div
+                  key={pkg.name}
+                  variants={fadeUp}
+                  whileHover={{
+                    y: -6,
+                  }}
+                  className={`rounded-2xl p-6 relative flex flex-col justify-between transition-all duration-300 ${cardStyles}`}
+                >
+                  {/* BADGE */}
+                  {pkg.badge && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                      <span
+                        className={`text-[11px] font-extrabold px-3 py-1 rounded-full shadow-md whitespace-nowrap uppercase tracking-wider ${
+                          pkg.highlight
+                            ? "bg-[#EF4444] text-white"
+                            : pkg.darkVariant
+                              ? "bg-[#E6A15C] text-[#1E1B18]"
+                              : "bg-[#2563EB] text-white"
+                        }`}
+                      >
+                        {pkg.badge}
+                      </span>
+                    </div>
+                  )}
+
+                  <div>
+                    {/* HEADER */}
+                    <div className="flex items-center justify-between mb-4">
+                      <h3
+                        className={`font-bold text-xl ${
+                          pkg.darkVariant ? "text-[#E6A15C]" : "text-[#0F172A]"
+                        }`}
+                        style={{
+                          fontFamily: "'Playfair Display', serif",
+                        }}
+                      >
+                        {pkg.name}
+                      </h3>
+
+                      <div
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                          pkg.darkVariant
+                            ? "bg-[#E6A15C]/10"
+                            : pkg.highlight
+                              ? "bg-[#EF4444]/10"
+                              : "bg-[#2563EB]/10"
+                        }`}
+                      >
+                        <pkg.icon
+                          size={18}
+                          className={
+                            pkg.darkVariant
+                              ? "text-[#E6A15C]"
+                              : pkg.highlight
+                                ? "text-[#EF4444]"
+                                : "text-[#2563EB]"
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    {/* PRICE */}
+                    <div className="mb-6 border-b border-dashed pb-4">
+                      <div className="flex items-baseline gap-2">
+                        <span
+                          className={`text-4xl font-extrabold tracking-tight ${
+                            pkg.darkVariant
+                              ? "text-[#F5EBE6]"
+                              : "text-[#0F172A]"
+                          }`}
+                        >
+                          ${pkg.discountedPrice}
+                        </span>
+
+                        <span
+                          className={`text-sm line-through ${
+                            pkg.darkVariant
+                              ? "text-white/40"
+                              : "text-[#475569]/50"
+                          }`}
+                        >
+                          ${pkg.originalPrice}
+                        </span>
+                      </div>
+
+                      <p
+                        className={`text-[10px] font-bold tracking-widest mt-1 uppercase ${
+                          pkg.darkVariant
+                            ? "text-white/50"
+                            : "text-[#475569]/60"
+                        }`}
+                      >
+                        CAD • One-Time
+                      </p>
+                    </div>
+
+                    {/* TAGLINE */}
+                    <p
+                      className={`text-[11px] font-bold tracking-wider mb-4 uppercase ${
+                        pkg.darkVariant ? "text-[#E6A15C]/80" : "text-[#2563EB]"
+                      }`}
+                    >
+                      {pkg.tagline}
+                    </p>
+
+                    {/* FEATURES */}
+                    <ul className="flex flex-col gap-3 mb-8">
+                      {pkg.features.map((feature) => (
+                        <li
+                          key={feature}
+                          className={`flex items-start gap-2.5 text-xs font-medium ${
+                            pkg.darkVariant
+                              ? "text-white/80"
+                              : "text-[#0F172A]/80"
+                          }`}
+                        >
+                          <CheckCircle
+                            size={14}
+                            className={`flex-shrink-0 mt-0.5 ${
+                              pkg.darkVariant
+                                ? "text-[#E6A15C]"
+                                : pkg.highlight
+                                  ? "text-[#EF4444]"
+                                  : "text-[#2563EB]"
+                            }`}
+                          />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                )}
-                <div className={`w-11 h-11 rounded-xl mb-5 flex items-center justify-center ${pkg.highlight ? 'bg-white/20' : 'bg-[#2563EB]/10'}`}>
-                  <pkg.icon size={20} className={pkg.highlight ? 'text-white' : 'text-[#2563EB]'} />
-                </div>
-                <h3 className={`font-bold text-xl mb-1 ${pkg.highlight ? 'text-white' : 'text-[#0F172A]'}`} style={{ fontFamily: "'Playfair Display', serif" }}>{pkg.name}</h3>
-                <p className={`text-sm mb-2 ${pkg.highlight ? 'text-white/70' : 'text-[#475569]/60'}`}>{pkg.tagline}</p>
-                <p className={`text-sm font-semibold mb-6 ${pkg.highlight ? 'text-white/90' : 'text-[#2563EB]'}`}>{pkg.price}</p>
-                <ul className="flex flex-col gap-2.5 mb-8">
-                  {pkg.features.map((f) => (
-                    <li key={f} className={`flex items-start gap-2.5 text-sm ${pkg.highlight ? 'text-white/90' : 'text-[#0F172A]/70'}`}>
-                      <CheckCircle size={14} className={`flex-shrink-0 mt-0.5 ${pkg.highlight ? 'text-white' : 'text-[#7A9E7E]'}`} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link to="/contact">
-                  <Button className={`w-full font-semibold ${pkg.highlight ? 'bg-white text-[#2563EB] hover:bg-[#F8FAFC]' : 'bg-[#2563EB] hover:bg-[#1E3A8A] text-white'}`}>
+
+                  {/* BUTTON */}
+                  <Button
+                    onClick={() => handleInitiatePurchase(pkg)}
+                    className={`w-full font-semibold transition-colors text-xs py-5 rounded-xl ${
+                      pkg.darkVariant
+                        ? "bg-[#E6A15C] text-[#1E1B18] hover:bg-[#d4904b]"
+                        : pkg.highlight
+                          ? "bg-[#EF4444] text-white hover:bg-[#DC2626]"
+                          : "bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+                    }`}
+                  >
                     {pkg.cta}
                   </Button>
-                </Link>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
       </section>
+
+      {/* PREMIUM MODAL INTEGRATION WITH ANIMATEPRESENCE */}
+      <AnimatePresence>
+        {selectedPkg && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop Blur Layer */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                if (loadingPackage !== selectedPkg.name) setSelectedPkg(null);
+              }}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+            />
+
+            {/* Modal Body */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl border border-slate-100"
+            >
+              {/* Close Button */}
+              <button
+                disabled={loadingPackage === selectedPkg.name}
+                onClick={() => setSelectedPkg(null)}
+                className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 transition-colors rounded-full p-1 hover:bg-slate-50"
+              >
+                <X size={18} />
+              </button>
+
+              {/* Modal Content */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                  <selectedPkg.icon size={20} />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold tracking-widest text-blue-600 uppercase">
+                    Checkout
+                  </span>
+                  <h3 className="text-xl font-bold text-slate-900 leading-none mt-0.5">
+                    {selectedPkg.name} Plan
+                  </h3>
+                </div>
+              </div>
+
+              {/* Order Summary Card */}
+              <div className="bg-slate-50 rounded-xl p-4 mb-5 border border-slate-100 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-700">
+                    Total Amount Due
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Includes 50% discount
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-2xl font-black text-slate-900">
+                    ${selectedPkg.discountedPrice}
+                  </span>
+                  <span className="text-xs text-slate-400 block font-medium">
+                    CAD
+                  </span>
+                </div>
+              </div>
+
+              {/* Dummy Dummy Credit Card Payment UI Section */}
+              <div className="space-y-3.5 mb-6">
+                <label className="text-[11px] font-bold tracking-wider text-slate-400 uppercase block">
+                  Payment Details (Demo Flow)
+                </label>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    disabled
+                    value="•••• •••• •••• 4242"
+                    className="w-full bg-slate-50 text-slate-600 font-mono text-sm border border-slate-200 rounded-xl px-4 py-3 pl-10 cursor-not-allowed"
+                  />
+                  <CreditCard
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      type="text"
+                      disabled
+                      value="12/29"
+                      className="w-full bg-slate-50 text-slate-600 font-mono text-sm border border-slate-200 rounded-xl px-4 py-3 cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      disabled
+                      value="***"
+                      className="w-full bg-slate-50 text-slate-600 font-mono text-sm border border-slate-200 rounded-xl px-4 py-3 cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-[11px] text-emerald-600 font-medium bg-emerald-50/50 px-3 py-2 rounded-lg border border-emerald-100/50">
+                  <Lock size={12} />
+                  <span>Secure demo checkout env. No real charge applies.</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={handleConfirmPurchase}
+                  disabled={loadingPackage === selectedPkg.name}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-5 rounded-xl shadow-lg shadow-blue-600/10 transition-colors"
+                >
+                  {loadingPackage === selectedPkg.name
+                    ? "Processing Securely..."
+                    : `Confirm & Pay $${selectedPkg.discountedPrice}`}
+                </Button>
+
+                <button
+                  disabled={loadingPackage === selectedPkg.name}
+                  onClick={() => setSelectedPkg(null)}
+                  className="w-full text-slate-400 hover:text-slate-600 font-medium text-xs py-2 transition-colors"
+                >
+                  Cancel Transaction
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* FAQ */}
       <section className="bg-[#F8FAFC] py-16 lg:py-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-12">
-            <motion.h2 variants={fadeUp} className="text-4xl font-bold text-[#0F172A]" style={{ fontFamily: "'Playfair Display', serif" }}>Frequently Asked Questions</motion.h2>
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <motion.h2
+              variants={fadeUp}
+              className="text-4xl font-bold text-[#0F172A]"
+              style={{
+                fontFamily: "'Playfair Display', serif",
+              }}
+            >
+              Frequently Asked Questions
+            </motion.h2>
           </motion.div>
-          <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true }} className="flex flex-col gap-4">
+
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="flex flex-col gap-4"
+          >
             {faqs.map((faq) => (
-              <motion.div key={faq.q} variants={fadeUp} className="bg-white rounded-2xl p-7 border border-[#2563EB]/10">
+              <motion.div
+                key={faq.q}
+                variants={fadeUp}
+                className="bg-white rounded-2xl p-7 border border-[#2563EB]/10 shadow-sm"
+              >
                 <h3 className="font-bold text-[#0F172A] mb-2">{faq.q}</h3>
-                <p className="text-[#475569]/70 text-sm leading-relaxed">{faq.a}</p>
+                <p className="text-[#475569]/70 text-sm leading-relaxed">
+                  {faq.a}
+                </p>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
-
     </>
   );
 }

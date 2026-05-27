@@ -141,19 +141,51 @@ export async function POST(req: NextRequest) {
   });
 
   // Create employer package
+  // await (
+  //   await collection<EmployerPackageDoc>("employerPackages")
+  // ).insertOne({
+  //   id: packageId,
+  //   employerId,
+  //   name: "Free Trial",
+  //   jobCredits: 10,
+  //   jobsPosted: 0,
+  //   jobPostExpiryDays: 180,
+  //   creditValidity: "Credit Never Expire",
+  //   status: "Active",
+  //   expiresAt: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
+  //   createdAt: now,
+  //   updatedAt: now,
+  // });
+
   await (
     await collection<EmployerPackageDoc>("employerPackages")
   ).insertOne({
     id: packageId,
+
     employerId,
-    name: "Free Trial",
-    jobCredits: 10,
-    jobsPosted: 0,
+
+    packageName: "Free Plan",
+
+    remainingCredits: 3,
+
+    totalCreditsPurchased: 3,
+
+    unlimitedJobs: false,
+
+    isFreePlan: true,
+
     jobPostExpiryDays: 180,
-    creditValidity: "Credit Never Expire",
+
     status: "Active",
-    expiresAt: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
+
+    purchasedAt: now,
+
+    expiresAt: null,
+
+    creditExpiresAt: null,
+
     createdAt: now,
+
     updatedAt: now,
   });
 
@@ -175,12 +207,12 @@ export async function POST(req: NextRequest) {
         businessName,
         phoneNumber,
         province,
-        packageName: "Free Trial",
+        packageName: "Free Plan",
         packageStatus: "Active",
-        jobCredits: 1,
-        jobsPosted: 0,
+        remainingCredits: 3,
+        totalCreditsPurchased: 3,
+        isFreePlan: true,
         jobPostExpiryDays: 180,
-        creditValidity: "Credit Never Expire",
       },
     },
     { status: 201 },

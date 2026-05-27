@@ -73,7 +73,8 @@ const validations = {
   },
   website: (value: string): string | null => {
     if (!value.trim()) return null;
-    const urlRegex = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+    const urlRegex =
+      /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
     if (!urlRegex.test(value)) {
       return "Enter a valid website URL (e.g., https://example.com)";
     }
@@ -99,7 +100,8 @@ const validations = {
     if (textOnly.length < 20) {
       return "Description must be at least 20 characters (without HTML tags)";
     }
-    if (textOnly.length > 5000) return "Description is too long (max 5000 characters)";
+    if (textOnly.length > 5000)
+      return "Description is too long (max 5000 characters)";
     return null;
   },
   required: (value: string): string | null => {
@@ -222,7 +224,10 @@ interface PostAJobPageProps {
   initialData?: any;
 }
 
-export default function PostAJobPage({ editMode = false, initialData = null }: PostAJobPageProps) {
+export default function PostAJobPage({
+  editMode = false,
+  initialData = null,
+}: PostAJobPageProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -263,7 +268,6 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
   const [contactNameError, setContactNameError] = useState("");
   const [contactType, setContactType] = useState("Employer");
   const [companyName, setCompanyName] = useState("");
-  // const [companyNameError, setCompanyNameError] = useState("");
   const [applicationEmail, setApplicationEmail] = useState("");
   const [applicationEmailError, setApplicationEmailError] = useState("");
   const [mailingAddress, setMailingAddress] = useState("");
@@ -290,7 +294,7 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
     if (editMode && initialData) {
       setTitle(initialData.title || "");
       setCompany(initialData.company || "");
-      setCity(initialData.city || "");
+      setCity(initialData.location?.split(",")[0]?.trim() || "");
       setProvince(initialData.province || "");
       setEmploymentType(initialData.employmentType || "");
       setCategory(initialData.category || "");
@@ -312,8 +316,7 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
       setDescHtml(initialData.descriptionHtml || "");
       setReqHtml(initialData.requirementsHtml || "");
       setRemote(initialData.remote || false);
-      setIndigenous(initialData.indigenousOwned || false);
-      
+      setIndigenous(initialData.indigenous || false);
       // Application methods
       const howToApply = initialData.howToApply || {};
       setByEmail(howToApply.byEmail || false);
@@ -529,12 +532,32 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
   const validateForm = (): boolean => {
     const fieldsToValidate = [
       { value: title, validator: () => validateTitle(title), field: "title" },
-      { value: company, validator: () => validateCompany(company), field: "company" },
+      {
+        value: company,
+        validator: () => validateCompany(company),
+        field: "company",
+      },
       { value: city, validator: () => validateCity(city), field: "city" },
-      { value: province, validator: () => validateProvince(province), field: "province" },
-      { value: employmentType, validator: () => validateEmploymentType(employmentType), field: "employmentType" },
-      { value: category, validator: () => validateCategory(category), field: "category" },
-      { value: descHtml, validator: () => validateDescription(descHtml), field: "descHtml" },
+      {
+        value: province,
+        validator: () => validateProvince(province),
+        field: "province",
+      },
+      {
+        value: employmentType,
+        validator: () => validateEmploymentType(employmentType),
+        field: "employmentType",
+      },
+      {
+        value: category,
+        validator: () => validateCategory(category),
+        field: "category",
+      },
+      {
+        value: descHtml,
+        validator: () => validateDescription(descHtml),
+        field: "descHtml",
+      },
     ];
 
     fieldsToValidate.forEach((f) =>
@@ -579,9 +602,11 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
     setLoading(true);
 
     try {
-      const url = editMode 
-        ? `/api/jobs/${initialData?.id || initialData?._id}` 
-        : "/api/jobs";
+      // const url = editMode
+      //   ? `/api/jobs/${initialData?.id || initialData?._id}`
+      //   : "/api/jobs";
+
+      const url = editMode ? `/api/jobs/${initialData?.id}` : "/api/jobs";
       const method = editMode ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -596,7 +621,7 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
           employmentType,
           salary: salary.replace(/,/g, ""),
           salaryPeriod,
-          vacancies: vacancies.trim() || null,
+          vacancies: vacancies ? Number(vacancies) : null,
           adDurationDays,
           category,
           startDate: startDate.trim() || null,
@@ -644,8 +669,11 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
         setSubmitted(true);
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
-    } catch {
-      setServerError("Network error. Please check your connection and try again.");
+    } catch (error) {
+      console.error("UPDATE ERROR:", error);
+      setServerError(
+        "Network error. Please check your connection and try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -679,7 +707,8 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
             </p>
             <p className="text-gray-600 leading-relaxed mb-2">
               Your job posting for{" "}
-              <strong>{submittedJob?.title || title}</strong> has been published.
+              <strong>{submittedJob?.title || title}</strong> has been
+              published.
             </p>
             {submittedJob?.jobUniqueId && (
               <p className="text-gray-500 text-sm mb-2">
@@ -692,13 +721,15 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                   View Job
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                className="border-blue-300 text-blue-700 hover:bg-blue-200"
-                onClick={() => window.location.reload()}
-              >
-                Post Another Job
-              </Button>
+
+              <Link to="/dashboard">
+                <Button
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-200"
+                >
+                  Go to Dashboard
+                </Button>
+              </Link>
             </div>
           </motion.div>
         </section>
@@ -710,10 +741,18 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
   return (
     <>
       <Helmet>
-        <title>{editMode ? "Edit Job — Youth Employment Canada" : "Post a Job — Youth Employment Canada"}</title>
+        <title>
+          {editMode
+            ? "Edit Job — Youth Employment Canada"
+            : "Post a Job — Youth Employment Canada"}
+        </title>
         <meta
           name="description"
-          content={editMode ? "Edit your job posting on Youth Employment Canada." : "Post a job on Youth Employment Canada and connect with skilled youth job seekers across Canada."}
+          content={
+            editMode
+              ? "Edit your job posting on Youth Employment Canada."
+              : "Post a job on Youth Employment Canada and connect with skilled youth job seekers across Canada."
+          }
         />
       </Helmet>
 
@@ -753,8 +792,8 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
               variants={fadeUp}
               className="text-gray-600 text-lg max-w-xl leading-relaxed"
             >
-              {editMode 
-                ? "Update your job posting details below." 
+              {editMode
+                ? "Update your job posting details below."
                 : "Reach thousands of qualified Youth across Canada."}
             </motion.p>
           </motion.div>
@@ -789,7 +828,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                       placeholder="e.g. Community Health Worker"
                       className={`border ${titleError && touched.title ? "border-red-500 focus-visible:ring-red-300" : "border-blue-200 focus-visible:ring-blue-300"}`}
                     />
-                    <ErrorMessage message={touched.title ? titleError : undefined} />
+                    <ErrorMessage
+                      message={touched.title ? titleError : undefined}
+                    />
                   </div>
 
                   {/* Company & Website */}
@@ -806,7 +847,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                         placeholder="Your organization name"
                         className={`border ${companyError && touched.company ? "border-red-500" : "border-blue-200"}`}
                       />
-                      <ErrorMessage message={touched.company ? companyError : undefined} />
+                      <ErrorMessage
+                        message={touched.company ? companyError : undefined}
+                      />
                     </div>
                     <div className="flex flex-col gap-2">
                       <Label className="text-gray-700 font-medium text-sm">
@@ -819,7 +862,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                         placeholder="https://yourorganization.ca"
                         className={`border ${websiteError && touched.website ? "border-red-500" : "border-blue-200"}`}
                       />
-                      <ErrorMessage message={touched.website ? websiteError : undefined} />
+                      <ErrorMessage
+                        message={touched.website ? websiteError : undefined}
+                      />
                     </div>
                   </div>
 
@@ -837,7 +882,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                         placeholder="e.g. Edmonton"
                         className={`border ${cityError && touched.city ? "border-red-500" : "border-blue-200"}`}
                       />
-                      <ErrorMessage message={touched.city ? cityError : undefined} />
+                      <ErrorMessage
+                        message={touched.city ? cityError : undefined}
+                      />
                     </div>
                     <div className="flex flex-col gap-2">
                       <Label className="text-gray-700 font-medium text-sm">
@@ -859,7 +906,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                           <option key={p}>{p}</option>
                         ))}
                       </select>
-                      <ErrorMessage message={touched.province ? provinceError : undefined} />
+                      <ErrorMessage
+                        message={touched.province ? provinceError : undefined}
+                      />
                     </div>
                   </div>
 
@@ -884,7 +933,13 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                           <option key={t}>{t}</option>
                         ))}
                       </select>
-                      <ErrorMessage message={touched.employmentType ? employmentTypeError : undefined} />
+                      <ErrorMessage
+                        message={
+                          touched.employmentType
+                            ? employmentTypeError
+                            : undefined
+                        }
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col gap-2">
@@ -898,7 +953,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                           placeholder="e.g. 55,000"
                           className={`border ${salaryError && touched.salary ? "border-red-500" : "border-blue-200"}`}
                         />
-                        <ErrorMessage message={touched.salary ? salaryError : undefined} />
+                        <ErrorMessage
+                          message={touched.salary ? salaryError : undefined}
+                        />
                       </div>
                       <div className="flex flex-col gap-2">
                         <Label className="text-gray-700 font-medium text-sm">
@@ -933,6 +990,7 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                       <option value="90">90 days</option>
                       <option value="120">120 days</option>
                       <option value="150">150 days</option>
+                      <option value="180">180 days</option>
                     </select>
                   </div>
 
@@ -956,7 +1014,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                         <option key={c}>{c}</option>
                       ))}
                     </select>
-                    <ErrorMessage message={touched.category ? categoryError : undefined} />
+                    <ErrorMessage
+                      message={touched.category ? categoryError : undefined}
+                    />
                   </div>
 
                   {/* Remote Switch */}
@@ -979,7 +1039,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                 <div className="flex flex-col gap-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="flex flex-col gap-2">
-                      <Label className="text-gray-700 font-medium text-sm">Start Date</Label>
+                      <Label className="text-gray-700 font-medium text-sm">
+                        Start Date
+                      </Label>
                       <Input
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
@@ -987,7 +1049,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                       />
                     </div>
                     <div className="flex flex-col gap-2">
-                      <Label className="text-gray-700 font-medium text-sm">Vacancies</Label>
+                      <Label className="text-gray-700 font-medium text-sm">
+                        Vacancies
+                      </Label>
                       <Input
                         type="number"
                         min="1"
@@ -999,7 +1063,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="flex flex-col gap-2">
-                      <Label className="text-gray-700 font-medium text-sm">Position Type</Label>
+                      <Label className="text-gray-700 font-medium text-sm">
+                        Position Type
+                      </Label>
                       <select
                         value={positionType}
                         onChange={(e) => setPositionType(e.target.value)}
@@ -1013,7 +1079,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="flex flex-col gap-2">
-                      <Label className="text-gray-700 font-medium text-sm">Experience</Label>
+                      <Label className="text-gray-700 font-medium text-sm">
+                        Experience
+                      </Label>
                       <Input
                         value={experience}
                         onChange={(e) => setExperience(e.target.value)}
@@ -1021,7 +1089,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                       />
                     </div>
                     <div className="flex flex-col gap-2">
-                      <Label className="text-gray-700 font-medium text-sm">Education</Label>
+                      <Label className="text-gray-700 font-medium text-sm">
+                        Education
+                      </Label>
                       <Input
                         value={education}
                         onChange={(e) => setEducation(e.target.value)}
@@ -1031,7 +1101,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="flex flex-col gap-2">
-                      <Label className="text-gray-700 font-medium text-sm">Travel Expectations</Label>
+                      <Label className="text-gray-700 font-medium text-sm">
+                        Travel Expectations
+                      </Label>
                       <select
                         value={travel}
                         onChange={(e) => setTravel(e.target.value)}
@@ -1043,7 +1115,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                       </select>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <Label className="text-gray-700 font-medium text-sm">Vacation</Label>
+                      <Label className="text-gray-700 font-medium text-sm">
+                        Vacation
+                      </Label>
                       <Input
                         value={vacation}
                         onChange={(e) => setVacation(e.target.value)}
@@ -1053,7 +1127,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="flex flex-col gap-2">
-                      <Label className="text-gray-700 font-medium text-sm">NOC Code</Label>
+                      <Label className="text-gray-700 font-medium text-sm">
+                        NOC Code
+                      </Label>
                       <Input
                         value={nocCode}
                         onChange={(e) => setNocCode(e.target.value)}
@@ -1069,7 +1145,8 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                 <SectionHeading step={3} title="Job Description" />
                 <div className="flex flex-col gap-5">
                   <Tip>
-                    Use plain, welcoming language. Describe the role, team, and what makes your organization great.
+                    Use plain, welcoming language. Describe the role, team, and
+                    what makes your organization great.
                   </Tip>
                   <div className="flex flex-col gap-2">
                     <Label className="text-gray-700 font-medium text-sm">
@@ -1081,7 +1158,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                       onHtmlChange={handleDescHtml}
                       minHeight={180}
                     />
-                    <ErrorMessage message={touched.descHtml ? descHtmlError : undefined} />
+                    <ErrorMessage
+                      message={touched.descHtml ? descHtmlError : undefined}
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <Label className="text-gray-700 font-medium text-sm">
@@ -1124,12 +1203,20 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                           <Input
                             type="email"
                             value={applicationEmail}
-                            onChange={(e) => setApplicationEmail(e.target.value)}
+                            onChange={(e) =>
+                              setApplicationEmail(e.target.value)
+                            }
                             onBlur={() => handleBlur("applicationEmail")}
                             placeholder="hr@company.ca"
                             className={`mt-1 ${applicationEmailError && touched.applicationEmail ? "border-red-500" : "border-blue-200"}`}
                           />
-                          <ErrorMessage message={touched.applicationEmail ? applicationEmailError : undefined} />
+                          <ErrorMessage
+                            message={
+                              touched.applicationEmail
+                                ? applicationEmailError
+                                : undefined
+                            }
+                          />
                         </div>
                       )}
                     </label>
@@ -1149,7 +1236,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                       </div>
                       {byMail && (
                         <div className="mt-4">
-                          <Label className="text-sm font-medium">Mailing Address</Label>
+                          <Label className="text-sm font-medium">
+                            Mailing Address
+                          </Label>
                           <Input
                             value={mailingAddress}
                             onChange={(e) => setMailingAddress(e.target.value)}
@@ -1186,7 +1275,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                             placeholder="403-555-1234"
                             className={`mt-1 ${phoneError && touched.phone ? "border-red-500" : "border-blue-200"}`}
                           />
-                          <ErrorMessage message={touched.phone ? phoneError : undefined} />
+                          <ErrorMessage
+                            message={touched.phone ? phoneError : undefined}
+                          />
                         </div>
                       )}
                     </label>
@@ -1215,12 +1306,16 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                             <Input
                               placeholder="From (e.g., 9:00 AM)"
                               value={inPersonFromTime}
-                              onChange={(e) => setInPersonFromTime(e.target.value)}
+                              onChange={(e) =>
+                                setInPersonFromTime(e.target.value)
+                              }
                             />
                             <Input
                               placeholder="To (e.g., 5:00 PM)"
                               value={inPersonToTime}
-                              onChange={(e) => setInPersonToTime(e.target.value)}
+                              onChange={(e) =>
+                                setInPersonToTime(e.target.value)
+                              }
                             />
                           </div>
                         </div>
@@ -1235,7 +1330,9 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                 <SectionHeading step={5} title="Contact Information" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col gap-2">
-                    <Label className="text-gray-700 font-medium text-sm">Contact Name</Label>
+                    <Label className="text-gray-700 font-medium text-sm">
+                      Contact Name
+                    </Label>
                     <Input
                       value={contactName}
                       onChange={(e) => setContactName(e.target.value)}
@@ -1243,10 +1340,16 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                       placeholder="Jane Doe"
                       className={`border ${contactNameError && touched.contactName ? "border-red-500" : "border-blue-200"}`}
                     />
-                    <ErrorMessage message={touched.contactName ? contactNameError : undefined} />
+                    <ErrorMessage
+                      message={
+                        touched.contactName ? contactNameError : undefined
+                      }
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Label className="text-gray-700 font-medium text-sm">Contact Type</Label>
+                    <Label className="text-gray-700 font-medium text-sm">
+                      Contact Type
+                    </Label>
                     <select
                       value={contactType}
                       onChange={(e) => setContactType(e.target.value)}
@@ -1287,9 +1390,24 @@ export default function PostAJobPage({ editMode = false, initialData = null }: P
                 >
                   {loading ? (
                     <span className="flex items-center gap-2">
-                      <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      <svg
+                        className="animate-spin w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8H4z"
+                        />
                       </svg>
                       {editMode ? "Saving..." : "Submitting..."}
                     </span>
