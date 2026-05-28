@@ -178,6 +178,11 @@ export default function PricingPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loadingPackage, setLoadingPackage] = useState<string | null>(null);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState("");
+  const [finalPrice, setFinalPrice] = useState<number | null>(null);
 
   // Modal states
   const [selectedPkg, setSelectedPkg] = useState<(typeof packages)[0] | null>(
@@ -209,8 +214,53 @@ export default function PricingPage() {
       return;
     }
 
-    // Saare logic checks pass hone ke baad modal open hoga
     setSelectedPkg(pkg);
+    setPromoCode("");
+    setPromoApplied(false);
+    setPromoError("");
+    setFinalPrice(null);
+  };
+
+  const handleApplyPromo = async () => {
+    if (!selectedPkg || !promoCode) return;
+
+    try {
+      setPromoLoading(true);
+
+      setPromoError("");
+
+      const response = await fetch("/api/promo/verify", {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          code: promoCode,
+
+          packageName: selectedPkg.name,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Invalid promo code");
+      }
+
+      setPromoApplied(true);
+
+      setFinalPrice(0);
+    } catch (error: any) {
+      setPromoApplied(false);
+
+      setFinalPrice(null);
+
+      setPromoError(error.message);
+    } finally {
+      setPromoLoading(false);
+    }
   };
 
   // actual function triggered from within the modal
@@ -229,6 +279,8 @@ export default function PricingPage() {
         },
         body: JSON.stringify({
           packageName,
+
+          promoCode: promoApplied ? promoCode : null,
         }),
       });
 
@@ -522,7 +574,10 @@ export default function PricingPage() {
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-black text-slate-900">
-                    ${selectedPkg.discountedPrice}
+                    $
+                    {finalPrice !== null
+                      ? finalPrice
+                      : selectedPkg.discountedPrice}{" "}
                   </span>
                   <span className="text-xs text-slate-400 block font-medium">
                     CAD
@@ -530,6 +585,43 @@ export default function PricingPage() {
                 </div>
               </div>
 
+              {/* PROMO CODE */}
+              <div className="mb-5">
+                <label className="text-[11px] font-bold tracking-wider text-slate-400 uppercase block mb-2">
+                  Promo Code
+                </label>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    placeholder="Enter promo code"
+                    className="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <Button
+                    type="button"
+                    onClick={handleApplyPromo}
+                    disabled={promoLoading || !promoCode}
+                    className="bg-slate-900 hover:bg-slate-800 text-white px-5 rounded-xl"
+                  >
+                    {promoLoading ? "Checking..." : "Apply"}
+                  </Button>
+                </div>
+
+                {promoApplied && (
+                  <p className="text-emerald-600 text-xs font-semibold mt-2">
+                    Promo applied successfully 🎉
+                  </p>
+                )}
+
+                {promoError && (
+                  <p className="text-red-500 text-xs font-semibold mt-2">
+                    {promoError}
+                  </p>
+                )}
+              </div>
               {/* Dummy Dummy Credit Card Payment UI Section */}
               <div className="space-y-3.5 mb-6">
                 <label className="text-[11px] font-bold tracking-wider text-slate-400 uppercase block">
@@ -583,7 +675,13 @@ export default function PricingPage() {
                 >
                   {loadingPackage === selectedPkg.name
                     ? "Processing Securely..."
-                    : `Confirm & Pay $${selectedPkg.discountedPrice}`}
+                    : finalPrice === 0
+                      ? "Activate Package"
+                      : `Confirm & Pay $${
+                          finalPrice !== null
+                            ? finalPrice
+                            : selectedPkg.discountedPrice
+                        }`}
                 </Button>
 
                 <button

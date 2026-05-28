@@ -86,6 +86,7 @@ export type EmployerPackageHistoryDoc = {
   packageName: string;
   creditsAdded: number;
   unlimitedJobs: boolean;
+  promoCodeUsed?: string | null;
   isFreePlan: boolean;
   jobPostExpiryDays: number;
   purchasedAt: Date;
@@ -99,6 +100,18 @@ export type EmployerPackageHistoryDoc = {
   updatedAt: Date;
 };
 
+export type PromoCodeDoc = {
+  id: string;
+  code: string;
+  packageName: string;
+  active: boolean;
+  usedCount: number;
+  maxUses?: number | null;
+  expiresAt?: Date | null;
+  createdBy?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
 export type JobDoc = {
   remote: boolean;
   id: string;
