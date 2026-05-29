@@ -419,7 +419,7 @@ export default function RegisterPage() {
                   </Button>
                 </Link>
                 <Link to="/">
-                  <Button variant="outline" className="w-full border-gray-200 text-gray-700 hover:bg-blue-200 font-medium">
+                  <Button variant="outline" className="w-full border-gray-200 text-gray-700 hover:bg-blue-500 font-medium">
                     Go to Home
                   </Button>
                 </Link>

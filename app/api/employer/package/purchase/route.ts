@@ -127,7 +127,10 @@ export async function POST(req: NextRequest) {
       }
 
       // EXPIRED
-      if (promoData.expiresAt && new Date(promoData.expiresAt as string) < new Date()) {
+      if (
+        promoData.expiresAt &&
+        new Date(promoData.expiresAt as string) < new Date()
+      ) {
         return NextResponse.json(
           {
             error: "Promo code expired",
@@ -139,7 +142,10 @@ export async function POST(req: NextRequest) {
       }
 
       // MAX USES
-      if (promoData.maxUses && (promoData.usedCount as number) >= (promoData.maxUses as number)) {
+      if (
+        promoData.maxUses &&
+        (promoData.usedCount as number) >= (promoData.maxUses as number)
+      ) {
         return NextResponse.json(
           {
             error: "Promo code usage limit reached",
@@ -155,7 +161,7 @@ export async function POST(req: NextRequest) {
 
     // GET EMPLOYER
     const employers = await collection("employers");
-    
+
     const employer = await employers.findOne({
       userId: user.id,
     });
@@ -175,6 +181,7 @@ export async function POST(req: NextRequest) {
 
     const historyCollection = await collection("employerPackageHistory");
 
+    const paymentTransactions = await collection("paymentTransactions");
     const existingPackage = await packages.findOne({
       employerId: employer.id,
     });
@@ -265,7 +272,7 @@ export async function POST(req: NextRequest) {
       creditsAdded: selectedPackage.credits,
 
       unlimitedJobs: selectedPackage.unlimitedJobs,
-
+      paymentMethod: isFreePromo ? "Promo Code" : "Card",
       isFreePlan: false,
 
       jobPostExpiryDays: selectedPackage.expiryDays,
@@ -302,6 +309,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    await paymentTransactions.insertOne({
+      id: randomUUID(),
+
+      employerId: employer.id,
+
+      packageName,
+
+      amount: isFreePromo ? 0 : selectedPackage.amount,
+
+      currency: "CAD",
+
+      paymentStatus: "paid",
+
+      paymentProvider: isFreePromo ? "promo_code" : "stripe",
+      paymentMethod: isFreePromo ? "Promo Code" : "Card",
+      stripeSessionId: null,
+
+      stripePaymentIntentId: null,
+
+      promoCodeUsed: promoCode,
+
+      isPromoPayment: isFreePromo,
+
+      createdAt: now,
+
+      updatedAt: now,
+    });
     return NextResponse.json({
       success: true,
 

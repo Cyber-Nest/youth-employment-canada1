@@ -12,8 +12,6 @@ import {
   ShieldCheck,
   Crown,
   X,
-  CreditCard,
-  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -264,19 +262,93 @@ export default function PricingPage() {
   };
 
   // actual function triggered from within the modal
+  // const handleConfirmPurchase = async () => {
+  //   if (!selectedPkg) return;
+  //   const packageName = selectedPkg.name;
+
+  //   try {
+  //     setLoadingPackage(packageName);
+
+  //     const response = await fetch("/api/employer/package/purchase", {
+  //       method: "POST",
+  //       credentials: "include",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         packageName,
+
+  //         promoCode: promoApplied ? promoCode : null,
+  //       }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (!response.ok) {
+  //       throw new Error(data.error || "Failed to activate package");
+  //     }
+
+  //     alert(`${packageName} package activated successfully`);
+  //     setSelectedPkg(null); // Close modal
+  //     router.push("/dashboard");
+  //   } catch (error: any) {
+  //     alert(error.message || "Something went wrong");
+  //   } finally {
+  //     setLoadingPackage(null);
+  //   }
+  // };
+
   const handleConfirmPurchase = async () => {
     if (!selectedPkg) return;
+
     const packageName = selectedPkg.name;
 
     try {
       setLoadingPackage(packageName);
 
-      const response = await fetch("/api/employer/package/purchase", {
+      // FREE PROMO FLOW
+      if (finalPrice === 0) {
+        const response = await fetch("/api/employer/package/purchase", {
+          method: "POST",
+
+          credentials: "include",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            packageName,
+
+            promoCode,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to activate package");
+        }
+
+        alert(`${packageName} package activated successfully`);
+
+        setSelectedPkg(null);
+
+        router.push("/dashboard");
+
+        return;
+      }
+
+      // STRIPE FLOW
+      const response = await fetch("/api/stripe/create-checkout-session", {
         method: "POST",
+
         credentials: "include",
+
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify({
           packageName,
 
@@ -287,12 +359,17 @@ export default function PricingPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to activate package");
+        throw new Error(data.error || "Failed to start payment");
       }
 
-      alert(`${packageName} package activated successfully`);
-      setSelectedPkg(null); // Close modal
-      router.push("/dashboard");
+      // REDIRECT TO STRIPE
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+
+        return;
+      }
+
+      throw new Error("Stripe checkout URL missing");
     } catch (error: any) {
       alert(error.message || "Something went wrong");
     } finally {
@@ -597,7 +674,7 @@ export default function PricingPage() {
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                     placeholder="Enter promo code"
-                    className="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   />
 
                   <Button
@@ -623,7 +700,7 @@ export default function PricingPage() {
                 )}
               </div>
               {/* Dummy Dummy Credit Card Payment UI Section */}
-              <div className="space-y-3.5 mb-6">
+              {/* <div className="space-y-3.5 mb-6">
                 <label className="text-[11px] font-bold tracking-wider text-slate-400 uppercase block">
                   Payment Details (Demo Flow)
                 </label>
@@ -664,7 +741,7 @@ export default function PricingPage() {
                   <Lock size={12} />
                   <span>Secure demo checkout env. No real charge applies.</span>
                 </div>
-              </div>
+              </div> */}
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-2">

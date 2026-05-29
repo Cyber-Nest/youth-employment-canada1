@@ -96,6 +96,9 @@ export type EmployerPackageHistoryDoc = {
   transactionId?: string | null;
   amount?: number | null;
   currency?: string | null;
+  paymentMethod?: string | null;
+  stripeSessionId?: string | null;
+  stripePaymentIntentId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -112,6 +115,24 @@ export type PromoCodeDoc = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+export type PaymentTransactionDoc = {
+  id: string;
+  employerId: string;
+  packageName: string;
+  amount: number;
+  currency: string;
+  paymentStatus: "pending" | "paid" | "failed" | "cancelled" | "refunded";
+  paymentProvider: string;
+  paymentMethod?: string | null;
+  stripeSessionId?: string | null;
+  stripePaymentIntentId?: string | null;
+  promoCodeUsed?: string | null;
+  isPromoPayment: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type JobDoc = {
   remote: boolean;
   id: string;

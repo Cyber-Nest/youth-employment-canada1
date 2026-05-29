@@ -58,10 +58,22 @@ export async function GET(req: NextRequest) {
       })
       .toArray();
 
+    const paymentTransactions = await collection("paymentTransactions");
+
+    const payments = await paymentTransactions
+      .find({
+        employerId: employer.id,
+      })
+      .sort({
+        createdAt: -1,
+      })
+      .toArray();
+
     return NextResponse.json({
       success: true,
 
       history,
+      payments,
     });
   } catch (error) {
     console.error("Error fetching package history:", error);
