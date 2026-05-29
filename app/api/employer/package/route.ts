@@ -63,6 +63,18 @@ export async function GET(req: NextRequest) {
         },
       );
     }
+    const paymentTransactions = await collection("paymentTransactions");
+
+    const latestPayment = await paymentTransactions.findOne(
+      {
+        employerId: employer.id,
+      },
+      {
+        sort: {
+          createdAt: -1,
+        },
+      },
+    );
 
     return NextResponse.json({
       success: true,
@@ -87,6 +99,7 @@ export async function GET(req: NextRequest) {
         purchasedAt: employerPackage.purchasedAt,
 
         expiresAt: employerPackage.expiresAt,
+        paymentMethod: latestPayment?.paymentMethod || null,
       },
     });
   } catch (error) {

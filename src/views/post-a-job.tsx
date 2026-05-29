@@ -725,7 +725,7 @@ export default function PostAJobPage({
               <Link to="/dashboard">
                 <Button
                   variant="outline"
-                  className="border-blue-300 text-blue-700 hover:bg-blue-200"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-500"
                 >
                   Go to Dashboard
                 </Button>

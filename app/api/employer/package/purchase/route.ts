@@ -73,6 +73,8 @@ export async function POST(req: NextRequest) {
 
     const packageName = body.packageName?.trim();
 
+    const promoCode = body.promoCode?.trim()?.toUpperCase() || null;
+
     if (!packageName) {
       return NextResponse.json(
         {
@@ -98,6 +100,65 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const promoCodes = await collection("promoCodes");
+
+    let promoData = null;
+
+    let isFreePromo = false;
+
+    if (promoCode) {
+      promoData = await promoCodes.findOne({
+        code: promoCode,
+
+        packageName,
+
+        active: true,
+      });
+
+      if (!promoData) {
+        return NextResponse.json(
+          {
+            error: "Invalid promo code",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      // EXPIRED
+      if (
+        promoData.expiresAt &&
+        new Date(promoData.expiresAt as string) < new Date()
+      ) {
+        return NextResponse.json(
+          {
+            error: "Promo code expired",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      // MAX USES
+      if (
+        promoData.maxUses &&
+        (promoData.usedCount as number) >= (promoData.maxUses as number)
+      ) {
+        return NextResponse.json(
+          {
+            error: "Promo code usage limit reached",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      isFreePromo = true;
+    }
+
     // GET EMPLOYER
     const employers = await collection("employers");
 
@@ -120,6 +181,7 @@ export async function POST(req: NextRequest) {
 
     const historyCollection = await collection("employerPackageHistory");
 
+    const paymentTransactions = await collection("paymentTransactions");
     const existingPackage = await packages.findOne({
       employerId: employer.id,
     });
@@ -210,7 +272,7 @@ export async function POST(req: NextRequest) {
       creditsAdded: selectedPackage.credits,
 
       unlimitedJobs: selectedPackage.unlimitedJobs,
-
+      paymentMethod: isFreePromo ? "Promo Code" : "Card",
       isFreePlan: false,
 
       jobPostExpiryDays: selectedPackage.expiryDays,
@@ -220,20 +282,60 @@ export async function POST(req: NextRequest) {
       expiresAt,
 
       paymentStatus: "paid",
-
-      paymentProvider: "dummy",
-
-      transactionId: randomUUID(),
-
-      amount: selectedPackage.amount,
-
+      paymentProvider: isFreePromo ? "promo_code" : "dummy",
+      transactionId: isFreePromo ? `PROMO-${randomUUID()}` : randomUUID(),
       currency: "CAD",
-
+      amount: isFreePromo ? 0 : selectedPackage.amount,
+      promoCodeUsed: promoCode,
       createdAt: now,
 
       updatedAt: now,
     });
 
+    if (promoData) {
+      await promoCodes.updateOne(
+        {
+          id: promoData.id,
+        },
+        {
+          $inc: {
+            usedCount: 1,
+          },
+
+          $set: {
+            updatedAt: now,
+          },
+        } as any,
+      );
+    }
+
+    await paymentTransactions.insertOne({
+      id: randomUUID(),
+
+      employerId: employer.id,
+
+      packageName,
+
+      amount: isFreePromo ? 0 : selectedPackage.amount,
+
+      currency: "CAD",
+
+      paymentStatus: "paid",
+
+      paymentProvider: isFreePromo ? "promo_code" : "stripe",
+      paymentMethod: isFreePromo ? "Promo Code" : "Card",
+      stripeSessionId: null,
+
+      stripePaymentIntentId: null,
+
+      promoCodeUsed: promoCode,
+
+      isPromoPayment: isFreePromo,
+
+      createdAt: now,
+
+      updatedAt: now,
+    });
     return NextResponse.json({
       success: true,
 

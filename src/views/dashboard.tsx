@@ -117,6 +117,7 @@ interface UserData {
 interface PackageData {
   id: string;
   packageName: string;
+  paymentMethod?: string | null;
   remainingCredits: number;
   totalCreditsPurchased: number;
   unlimitedJobs: boolean;
@@ -145,50 +146,6 @@ interface Job {
   salary?: string;
   salaryPeriod?: string;
 }
-
-// // Status Badge Component
-// const StatusBadge = ({ status }: { status: string }) => {
-//   const config: Record<
-//     string,
-//     { bg: string; text: string; dot: string; label: string }
-//   > = {
-//     active: {
-//       bg: "bg-emerald-50",
-//       text: "text-emerald-700",
-//       dot: "bg-emerald-500",
-//       label: "Active",
-//     },
-//     draft: {
-//       bg: "bg-gray-100",
-//       text: "text-gray-600",
-//       dot: "bg-gray-400",
-//       label: "Draft",
-//     },
-//     closed: {
-//       bg: "bg-rose-50",
-//       text: "text-rose-700",
-//       dot: "bg-rose-500",
-//       label: "Closed",
-//     },
-//     expired: {
-//       bg: "bg-amber-50",
-//       text: "text-amber-700",
-//       dot: "bg-amber-500",
-//       label: "Expired",
-//     },
-//   };
-
-//   const style = config[status] || config.draft;
-
-//   return (
-//     <span
-//       className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}
-//     >
-//       <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-//       {style.label}
-//     </span>
-//   );
-// };
 
 // ============ HELPERS ============
 const formatDate = (dateString?: string, locale: string = "en-CA") => {
@@ -873,6 +830,14 @@ export default function DashboardPage() {
 
                     <span className="text-slate-100">
                       {jobPostExpiryDays} Days
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
+                    <span className="text-slate-400">Payment Method</span>
+
+                    <span className="text-slate-100">
+                      {packageData?.paymentMethod || "N/A"}
                     </span>
                   </div>
 

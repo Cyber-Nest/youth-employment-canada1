@@ -86,6 +86,7 @@ export type EmployerPackageHistoryDoc = {
   packageName: string;
   creditsAdded: number;
   unlimitedJobs: boolean;
+  promoCodeUsed?: string | null;
   isFreePlan: boolean;
   jobPostExpiryDays: number;
   purchasedAt: Date;
@@ -95,6 +96,39 @@ export type EmployerPackageHistoryDoc = {
   transactionId?: string | null;
   amount?: number | null;
   currency?: string | null;
+  paymentMethod?: string | null;
+  stripeSessionId?: string | null;
+  stripePaymentIntentId?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type PromoCodeDoc = {
+  id: string;
+  code: string;
+  packageName: string;
+  active: boolean;
+  usedCount: number;
+  maxUses?: number | null;
+  expiresAt?: Date | null;
+  createdBy?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type PaymentTransactionDoc = {
+  id: string;
+  employerId: string;
+  packageName: string;
+  amount: number;
+  currency: string;
+  paymentStatus: "pending" | "paid" | "failed" | "cancelled" | "refunded";
+  paymentProvider: string;
+  paymentMethod?: string | null;
+  stripeSessionId?: string | null;
+  stripePaymentIntentId?: string | null;
+  promoCodeUsed?: string | null;
+  isPromoPayment: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
