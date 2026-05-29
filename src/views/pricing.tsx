@@ -200,7 +200,7 @@ export default function PricingPage() {
       });
   }, []);
 
-  // initial check before opening modal
+  //initial check before opening modal
   const handleInitiatePurchase = (pkg: (typeof packages)[0]) => {
     if (!user) {
       router.push("/login");
