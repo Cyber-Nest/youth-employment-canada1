@@ -214,7 +214,7 @@ function JobCard({ job }: { job: Job }) {
         <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4">
           <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
             <MapPin size={11} className="text-blue-500" />
-            {job.location},
+            {job.location}
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
             <Clock size={11} className="text-blue-500" />
