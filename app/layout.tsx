@@ -11,6 +11,11 @@ export const metadata: Metadata = {
   description:
     "Youth Employment Canada connects young Canadians with inclusive employers across Canada. Explore job opportunities, hire youth talent, post jobs, and build the future workforce.",
 
+  icons: {
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
+  },
   keywords: [
     "Youth Employment Canada",
     "Canada jobs",

@@ -141,22 +141,6 @@ export async function POST(req: NextRequest) {
   });
 
   // Create employer package
-  // await (
-  //   await collection<EmployerPackageDoc>("employerPackages")
-  // ).insertOne({
-  //   id: packageId,
-  //   employerId,
-  //   name: "Free Trial",
-  //   jobCredits: 10,
-  //   jobsPosted: 0,
-  //   jobPostExpiryDays: 180,
-  //   creditValidity: "Credit Never Expire",
-  //   status: "Active",
-  //   expiresAt: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
-  //   createdAt: now,
-  //   updatedAt: now,
-  // });
-
   await (
     await collection<EmployerPackageDoc>("employerPackages")
   ).insertOne({

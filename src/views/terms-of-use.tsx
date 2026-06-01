@@ -499,10 +499,10 @@ export default function TermsOfUsePage() {
               <br />
               Email:{" "}
               <a
-                href="mailto:info@youthemploymentcanada.ca"
+                href="mailto:info.youthemployment@cyber-nest.ca"
                 className="text-blue-600 hover:underline font-medium"
               >
-                info@youthemploymentcanada.ca
+                info.youthemployment@cyber-nest.ca
               </a>
               <br />
               Service Area: Canada-wide

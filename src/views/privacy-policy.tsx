@@ -301,10 +301,10 @@ export default function PrivacyPolicyPage() {
             <p className="text-sm leading-relaxed mb-2 text-blue-100">
               Email:{" "}
               <a
-                href="mailto:info@youthemploymentcanada.ca"
+                href="mailto:info.youthemployment@cyber-nest.ca"
                 className="text-white hover:underline"
               >
-                info@youthemploymentcanada.ca
+                info.youthemployment@cyber-nest.ca
               </a>
             </p>
             <p className="text-sm leading-relaxed text-blue-100">

@@ -72,9 +72,13 @@ export default function ContactPage() {
   const [message, setMessage] = useState("");
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleSendEmail(e: React.MouseEvent) {
+  const handleSendEmail = async (e: React.MouseEvent) => {
     e.preventDefault();
+
+    setFormError("");
+    setFormSuccess("");
 
     if (
       !firstName.trim() ||
@@ -87,39 +91,51 @@ export default function ContactPage() {
       return;
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!emailRegex.test(email.trim())) {
       setFormError("Please enter a valid email address.");
       return;
     }
 
-    // Clear error
-    setFormError("");
+    try {
+      setIsLoading(true);
 
-    // Create email body
-    const emailBody = `Name: ${firstName} ${lastName}\nEmail: ${email}\nInquiry Type: ${inquiryType}\n\nMessage:\n${message}`;
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim().toLowerCase(),
+          inquiryType,
+          message: message.trim(),
+        }),
+      });
 
-    // Create mailto link
-    const mailtoLink = `mailto:info@youthemploymentcanada.ca?subject=Contact from ${firstName} ${lastName} - ${inquiryType}&body=${encodeURIComponent(emailBody)}`;
+      const data = await response.json();
 
-    // Open default email client (Gmail/Outlook/etc.)
-    window.location.href = mailtoLink;
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to send message");
+      }
 
-    // Show success message
-    setFormSuccess(
-      "Your email client has been opened. Please send the email to complete your inquiry.",
-    );
+      setFormSuccess(
+        "Your message has been sent successfully. We'll get back to you soon.",
+      );
 
-    // Optional: Reset form after 2 seconds
-    setTimeout(() => {
       setFirstName("");
       setLastName("");
       setEmail("");
       setInquiryType("");
       setMessage("");
-    }, 2000);
-  }
+    } catch (error: any) {
+      setFormError(error.message || "Failed to send message");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
@@ -185,8 +201,8 @@ export default function ContactPage() {
                   {
                     icon: Mail,
                     label: "Email",
-                    value: "info@youthemploymentcanada.ca",
-                    href: "mailto:info@youthemploymentcanada.ca",
+                    value: "info.youthemployment@cyber-nest.ca",
+                    href: "mailto:info.youthemployment@cyber-nest.ca",
                   },
                   {
                     icon: MapPin,
@@ -239,10 +255,10 @@ export default function ContactPage() {
                     We'd love to connect and help you find the right solution.
                   </p>
                   <a
-                    href="mailto:employers@youthemploymentcanada.ca"
+                    href="mailto:employers.youth@cyber-nest.ca"
                     className="text-white font-semibold text-sm hover:underline"
                   >
-                    employers@youthemploymentcanada.ca
+                    employers.youth@cyber-nest.ca
                   </a>
                 </div>
               </div>
@@ -376,16 +392,23 @@ export default function ContactPage() {
                   <Button
                     type="button"
                     onClick={handleSendEmail}
+                    disabled={isLoading}
                     size="lg"
                     className="bg-blue-600 hover:bg-blue-700 text-white font-semibold w-full shadow-md hover:shadow-lg transition-all duration-200"
                   >
-                    <span className="flex items-center gap-2">
-                      Send Message <Send size={16} />
-                    </span>
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="animate-spin">⏳</span>
+                        Sending Message...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        Send Message <Send size={16} />
+                      </span>
+                    )}
                   </Button>
                   <p className="text-xs text-gray-400 text-center mt-2">
-                    Clicking send will open your default email client (Gmail,
-                    Outlook, etc.)
+                    Your inquiry will be sent securely to our support team.
                   </p>
                 </form>
               </div>
