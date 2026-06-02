@@ -569,7 +569,7 @@ export default function DashboardPage() {
                           {/* Tags Section */}
                           <div className="flex flex-wrap items-center gap-1.5 mb-6">
                             <span className="inline-flex items-center gap-1 text-[10px] font-extrabold tracking-wider text-blue-700 bg-blue-50/80 border border-blue-100 px-2 py-0.5 rounded-md uppercase">
-                              JOBI-ID
+                              JOB-ID
                             </span>
                             <span className="text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md tracking-wide">
                               #

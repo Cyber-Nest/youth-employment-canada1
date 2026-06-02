@@ -104,3 +104,121 @@ export const sendOTP = async (
     throw new Error(`Failed to send OTP: ${error.message}`);
   }
 };
+
+export const sendContactEmail = async ({
+  firstName,
+  lastName,
+  email,
+  inquiryType,
+  message,
+}: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  inquiryType: string;
+  message: string;
+}) => {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Youth Employment Canada" <${process.env.EMAIL_USER}>`,
+      to: process.env.CONTACT_EMAIL,
+      replyTo: email,
+      subject: `New Contact Form Submission - ${inquiryType}`,
+      html: `
+      <!DOCTYPE html>
+      <html>
+      <body style="margin:0;padding:0;background:#f0f9ff;font-family:Arial,Helvetica,sans-serif;">
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 15px;background:#f0f9ff;">
+          <tr>
+            <td align="center">
+
+              <table width="100%" cellpadding="0" cellspacing="0"
+                style="max-width:650px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #bfdbfe;">
+
+                <tr>
+                  <td style="background:#2563EB;padding:30px;text-align:center;">
+                    <h1 style="margin:0;color:#fff;">
+                      Youth Employment Canada
+                    </h1>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:35px;">
+
+                    <h2 style="margin-top:0;color:#1e293b;">
+                      New Contact Form Submission
+                    </h2>
+
+                    <table width="100%" cellpadding="10">
+
+                      <tr>
+                        <td width="180">
+                          <strong>Full Name</strong>
+                        </td>
+                        <td>
+                          ${firstName} ${lastName}
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td>
+                          <strong>Email</strong>
+                        </td>
+                        <td>
+                          ${email}
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td>
+                          <strong>Inquiry Type</strong>
+                        </td>
+                        <td>
+                          ${inquiryType}
+                        </td>
+                      </tr>
+
+                    </table>
+
+                    <div
+                      style="
+                        margin-top:20px;
+                        padding:20px;
+                        background:#f8fafc;
+                        border:1px solid #e2e8f0;
+                        border-radius:10px;
+                      "
+                    >
+                      <strong>Message</strong>
+
+                      <p style="margin-top:12px;line-height:1.8;">
+                        ${message}
+                      </p>
+                    </div>
+
+                  </td>
+                </tr>
+
+              </table>
+
+            </td>
+          </tr>
+        </table>
+
+      </body>
+      </html>
+      `,
+    });
+
+    return {
+      success: true,
+      messageId: info.messageId,
+    };
+  } catch (error: any) {
+    console.error("Contact Email Error:", error.message);
+
+    throw new Error(`Failed to send contact email: ${error.message}`);
+  }
+};
