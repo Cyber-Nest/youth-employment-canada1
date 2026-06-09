@@ -123,11 +123,35 @@ export async function POST(req: NextRequest) {
     let isFreePromo = false;
 
     if (promoCode) {
+      // Pre-check: ensure coupon exists, is unused, AND has been assigned
+      const existingPromo = await promoCodes.findOne({
+        code: promoCode,
+        packageName,
+        status: "Unused",
+      });
+
+      if (!existingPromo) {
+        return NextResponse.json(
+          { error: "Invalid promo code or already redeemed." },
+          { status: 400 },
+        );
+      }
+
+      // Guard: coupon must be assigned before use
+      if (!existingPromo.assignedEmail) {
+        return NextResponse.json(
+          // { error: "This coupon has not been assigned yet and cannot be used." },
+          { error: "Invalid promo code or already redeemed." },
+          { status: 400 },
+        );
+      }
+
       const updateResult = await promoCodes.findOneAndUpdate(
         {
           code: promoCode,
           packageName,
-          status: "Unused"
+          status: "Unused",
+          assignedEmail: { $ne: null }, // extra safety: only update if assigned
         },
         {
           $set: {
@@ -136,24 +160,18 @@ export async function POST(req: NextRequest) {
             redeemedEmail: user.email,
             redeemedAt: new Date(),
             employerId: employer.id,
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         },
-        {
-          returnDocument: "after"
-        }
+        { returnDocument: "after" },
       );
 
       promoData = updateResult;
 
       if (!promoData) {
         return NextResponse.json(
-          {
-            error: "Invalid promo code or already redeemed.",
-          },
-          {
-            status: 400,
-          },
+          { error: "Failed to redeem promo code. Please try again." },
+          { status: 400 },
         );
       }
 
@@ -274,8 +292,6 @@ export async function POST(req: NextRequest) {
 
       updatedAt: now,
     });
-
-
 
     await paymentTransactions.insertOne({
       id: randomUUID(),

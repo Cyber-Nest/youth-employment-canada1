@@ -4,7 +4,8 @@ import { collection } from "@/server/db/mongo";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const code = body.code?.trim()?.toUpperCase() || body.promoCode?.trim()?.toUpperCase();
+    const code =
+      body.code?.trim()?.toUpperCase() || body.promoCode?.trim()?.toUpperCase();
     const packageName = body.packageName?.trim();
 
     if (!code || !packageName) {
@@ -29,10 +30,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Must be assigned before it can be used
+    if (!promo.assignedEmail) {
+      return NextResponse.json(
+        // { error: "This coupon has not been assigned yet and cannot be used." },
+        { error: "Invalid promo code or already redeemed." },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json({
       success: true,
       valid: true,
-      message: "Promo code is valid."
+      message: "Promo code is valid.",
     });
   } catch (error) {
     console.error("PROMO CHECK ERROR:", error);

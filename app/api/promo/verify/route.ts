@@ -37,6 +37,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Must be assigned before it can be used
+    if (!promo.assignedEmail) {
+      return NextResponse.json(
+        {
+          // error: "This coupon has not been assigned yet and cannot be used.",
+          error: "Invalid promo code or already redeemed.",
+        },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json({
       success: true,
       valid: true,
