@@ -75,8 +75,8 @@ function fmtDate(d: string | null) {
 export default function CouponManagementPage() {
   const [stats, setStats] = useState<PackageStat[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
-  const [seeding, setSeeding] = useState(false);
-  const [seedDone, setSeedDone] = useState(false);
+  // const [seeding, setSeeding] = useState(false);
+  // const [seedDone, setSeedDone] = useState(false);
 
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -120,25 +120,25 @@ export default function CouponManagementPage() {
 
   // ─── Seed Coupons ──────────────────────────────────────────────────────────
 
-  const handleSeed = async () => {
-    setSeeding(true);
-    try {
-      const res = await fetch("/api/admin/coupons/seed", { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        setSeedDone(true);
-        await fetchStats();
-        toast.success("Coupons generated successfully!");
-      } else {
-        toast.error(data.error || "Failed to generate coupons.");
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error("Network error. Please try again.");
-    } finally {
-      setSeeding(false);
-    }
-  };
+  // const handleSeed = async () => {
+  //   setSeeding(true);
+  //   try {
+  //     const res = await fetch("/api/admin/coupons/seed", { method: "POST" });
+  //     const data = await res.json();
+  //     if (data.success) {
+  //       setSeedDone(true);
+  //       await fetchStats();
+  //       toast.success("Coupons generated successfully!");
+  //     } else {
+  //       toast.error(data.error || "Failed to generate coupons.");
+  //     }
+  //   } catch (e) {
+  //     console.error(e);
+  //     toast.error("Network error. Please try again.");
+  //   } finally {
+  //     setSeeding(false);
+  //   }
+  // };
 
   // ─── Fetch Coupons (Table) ─────────────────────────────────────────────────
 
