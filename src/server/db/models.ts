@@ -107,8 +107,16 @@ export type PromoCodeDoc = {
   id: string;
   code: string;
   packageName: string;
-  active: boolean;
-  usedCount: number;
+  status: "Unused" | "Used";
+  assignedName?: string | null;
+  assignedEmail?: string | null;
+  assignedAt?: Date | null;
+  redeemedName?: string | null;
+  redeemedEmail?: string | null;
+  redeemedAt?: Date | null;
+  employerId?: string | null;
+  active?: boolean;
+  usedCount?: number;
   maxUses?: number | null;
   expiresAt?: Date | null;
   createdBy?: string | null;

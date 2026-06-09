@@ -100,68 +100,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const promoCodes = await collection("promoCodes");
-
-    let promoData = null;
-
-    let isFreePromo = false;
-
-    if (promoCode) {
-      promoData = await promoCodes.findOne({
-        code: promoCode,
-
-        packageName,
-
-        active: true,
-      });
-
-      if (!promoData) {
-        return NextResponse.json(
-          {
-            error: "Invalid promo code",
-          },
-          {
-            status: 400,
-          },
-        );
-      }
-
-      // EXPIRED
-      if (
-        promoData.expiresAt &&
-        new Date(promoData.expiresAt as string) < new Date()
-      ) {
-        return NextResponse.json(
-          {
-            error: "Promo code expired",
-          },
-          {
-            status: 400,
-          },
-        );
-      }
-
-      // MAX USES
-      if (
-        promoData.maxUses &&
-        (promoData.usedCount as number) >= (promoData.maxUses as number)
-      ) {
-        return NextResponse.json(
-          {
-            error: "Promo code usage limit reached",
-          },
-          {
-            status: 400,
-          },
-        );
-      }
-
-      isFreePromo = true;
-    }
-
     // GET EMPLOYER
     const employers = await collection("employers");
-
     const employer = await employers.findOne({
       userId: user.id,
     });
@@ -175,6 +115,67 @@ export async function POST(req: NextRequest) {
           status: 404,
         },
       );
+    }
+
+    const promoCodes = await collection("promoCodes");
+
+    let promoData = null;
+    let isFreePromo = false;
+
+    if (promoCode) {
+      // Pre-check: ensure coupon exists, is unused, AND has been assigned
+      const existingPromo = await promoCodes.findOne({
+        code: promoCode,
+        packageName,
+        status: "Unused",
+      });
+
+      if (!existingPromo) {
+        return NextResponse.json(
+          { error: "Invalid promo code or already redeemed." },
+          { status: 400 },
+        );
+      }
+
+      // Guard: coupon must be assigned before use
+      if (!existingPromo.assignedEmail) {
+        return NextResponse.json(
+          // { error: "This coupon has not been assigned yet and cannot be used." },
+          { error: "Invalid promo code or already redeemed." },
+          { status: 400 },
+        );
+      }
+
+      const updateResult = await promoCodes.findOneAndUpdate(
+        {
+          code: promoCode,
+          packageName,
+          status: "Unused",
+          assignedEmail: { $ne: null }, // extra safety: only update if assigned
+        },
+        {
+          $set: {
+            status: "Used",
+            redeemedName: user.name || user.email,
+            redeemedEmail: user.email,
+            redeemedAt: new Date(),
+            employerId: employer.id,
+            updatedAt: new Date(),
+          },
+        },
+        { returnDocument: "after" },
+      );
+
+      promoData = updateResult;
+
+      if (!promoData) {
+        return NextResponse.json(
+          { error: "Failed to redeem promo code. Please try again." },
+          { status: 400 },
+        );
+      }
+
+      isFreePromo = true;
     }
 
     const packages = await collection("employerPackages");
@@ -291,23 +292,6 @@ export async function POST(req: NextRequest) {
 
       updatedAt: now,
     });
-
-    if (promoData) {
-      await promoCodes.updateOne(
-        {
-          id: promoData.id,
-        },
-        {
-          $inc: {
-            usedCount: 1,
-          },
-
-          $set: {
-            updatedAt: now,
-          },
-        } as any,
-      );
-    }
 
     await paymentTransactions.insertOne({
       id: randomUUID(),

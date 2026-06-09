@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { Link, useNavigate } from "@/router";
 import { motion } from "motion/react";
+import toast from "react-hot-toast";
 import {
   CheckCircle,
   ChevronRight,
@@ -595,6 +596,7 @@ export default function PostAJobPage({
     setServerError("");
 
     if (!validateForm()) {
+      toast.error("Please fix the errors above before submitting.");
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -602,10 +604,6 @@ export default function PostAJobPage({
     setLoading(true);
 
     try {
-      // const url = editMode
-      //   ? `/api/jobs/${initialData?.id || initialData?._id}`
-      //   : "/api/jobs";
-
       const url = editMode ? `/api/jobs/${initialData?.id}` : "/api/jobs";
       const method = editMode ? "PUT" : "POST";
 
@@ -657,23 +655,28 @@ export default function PostAJobPage({
       const data = await res.json();
 
       if (!res.ok) {
-        setServerError(data.error || "Failed to save job posting.");
+        const errMsg = data.error || "Failed to save job posting.";
+        setServerError(errMsg);
+        toast.error(errMsg);
         setLoading(false);
         return;
       }
 
       if (editMode) {
+        toast.success("Job posting updated successfully!");
         navigate("/dashboard");
       } else {
         setSubmittedJob(data.job ?? null);
         setSubmitted(true);
+        toast.success("Job posting published successfully!");
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } catch (error) {
       console.error("UPDATE ERROR:", error);
-      setServerError(
-        "Network error. Please check your connection and try again.",
-      );
+      const errMsg =
+        "Network error. Please check your connection and try again.";
+      setServerError(errMsg);
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
