@@ -87,29 +87,12 @@ export async function POST(req: NextRequest) {
       const promo = await promoCodes.findOne({
         code: promoCode,
         packageName,
-        active: true,
+        status: "Unused",
       });
 
       if (!promo) {
         return NextResponse.json(
           { error: "Invalid promo code" },
-          { status: 400 },
-        );
-      }
-
-      if (promo.expiresAt && new Date(promo.expiresAt as string) < new Date()) {
-        return NextResponse.json(
-          { error: "Promo code expired" },
-          { status: 400 },
-        );
-      }
-
-      if (
-        promo.maxUses &&
-        (promo.usedCount as number) >= (promo.maxUses as number)
-      ) {
-        return NextResponse.json(
-          { error: "Promo usage limit reached" },
           { status: 400 },
         );
       }
