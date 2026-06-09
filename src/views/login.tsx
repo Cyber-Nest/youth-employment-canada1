@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginWithIdentifier } from "@/lib/auth/auth-client";
+import toast from "react-hot-toast";
 
 /* ── Animation ─────────────────────────────────────────────────────── */
 const fadeUp = {
@@ -454,10 +455,12 @@ export default function LoginPage() {
     try {
       const result = await loginWithIdentifier(identifier, password);
       if (result.error) {
-        setServerError(
-          result.error.message || "Invalid email, username, or password.",
-        );
+        const msg =
+          result.error.message || "Invalid email, username, or password.";
+        setServerError(msg);
+        toast.error(msg);
       } else {
+        toast.success("Signed in successfully!");
         const user = result.data?.user;
         if (user?.accountType === "employer") {
           navigate("/dashboard", { replace: true });
@@ -468,7 +471,9 @@ export default function LoginPage() {
         }
       }
     } catch {
-      setServerError("Something went wrong. Please try again.");
+      const msg = "Something went wrong. Please try again.";
+      setServerError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

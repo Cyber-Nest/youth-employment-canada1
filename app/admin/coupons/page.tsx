@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
+import toast from "react-hot-toast";
 import {
   Ticket,
   Search,
@@ -104,8 +105,10 @@ export default function CouponManagementPage() {
       const res = await fetch("/api/admin/coupons/stats");
       const data = await res.json();
       if (data.success) setStats(data.stats);
+      else toast.error("Failed to load stats.");
     } catch (e) {
       console.error(e);
+      toast.error("Network error loading stats.");
     } finally {
       setStatsLoading(false);
     }
@@ -125,9 +128,13 @@ export default function CouponManagementPage() {
       if (data.success) {
         setSeedDone(true);
         await fetchStats();
+        toast.success("Coupons generated successfully!");
+      } else {
+        toast.error(data.error || "Failed to generate coupons.");
       }
     } catch (e) {
       console.error(e);
+      toast.error("Network error. Please try again.");
     } finally {
       setSeeding(false);
     }
@@ -212,8 +219,11 @@ export default function CouponManagementPage() {
       setAssignEmail("");
       await fetchCoupons();
       await fetchStats();
+      toast.success(`Coupon assigned to ${assignName.trim()} successfully!`);
     } catch (e: unknown) {
-      setAssignError(e instanceof Error ? e.message : "Assignment failed");
+      const msg = e instanceof Error ? e.message : "Assignment failed";
+      setAssignError(msg);
+      toast.error(msg);
     } finally {
       setAssignLoading(false);
     }
@@ -224,6 +234,7 @@ export default function CouponManagementPage() {
   const handleExport = async () => {
     if (!selectedPackage) return;
     setExportLoading(true);
+    const toastId = toast.loading(`Exporting ${selectedPackage} coupons...`);
     try {
       // Fetch ALL coupons for the selected package
       const params = new URLSearchParams({
@@ -234,7 +245,10 @@ export default function CouponManagementPage() {
       const res = await fetch(`/api/admin/coupons?${params}`);
       const data = await res.json();
 
-      if (!data.success || !data.coupons) return;
+      if (!data.success || !data.coupons) {
+        toast.error("Failed to fetch coupons for export.", { id: toastId });
+        return;
+      }
 
       const rows = data.coupons.map((c: Coupon) => ({
         "Coupon Code": c.code,
@@ -267,8 +281,10 @@ export default function CouponManagementPage() {
 
       const fileName = `${selectedPackage.replace(" ", "_")}_Coupons_${new Date().toISOString().slice(0, 10)}.xlsx`;
       XLSX.writeFile(wb, fileName);
+      toast.success(`Exported ${rows.length} coupons successfully!`, { id: toastId });
     } catch (e) {
       console.error("Export failed:", e);
+      toast.error("Export failed. Please try again.", { id: toastId });
     } finally {
       setExportLoading(false);
     }

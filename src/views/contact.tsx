@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { motion } from "motion/react";
+import toast from "react-hot-toast";
 import {
   Mail,
   MapPin,
@@ -124,6 +125,7 @@ export default function ContactPage() {
       setFormSuccess(
         "Your message has been sent successfully. We'll get back to you soon.",
       );
+      toast.success("Message sent! We'll get back to you soon.");
 
       setFirstName("");
       setLastName("");
@@ -131,7 +133,9 @@ export default function ContactPage() {
       setInquiryType("");
       setMessage("");
     } catch (error: any) {
-      setFormError(error.message || "Failed to send message");
+      const msg = error.message || "Failed to send message";
+      setFormError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }

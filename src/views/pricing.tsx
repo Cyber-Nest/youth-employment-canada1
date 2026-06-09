@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useRouter } from "@/router";
 import { motion, AnimatePresence } from "motion/react";
+import toast from "react-hot-toast";
 import {
   CheckCircle,
   Star,
@@ -203,12 +204,13 @@ export default function PricingPage() {
   //initial check before opening modal
   const handleInitiatePurchase = (pkg: (typeof packages)[0]) => {
     if (!user) {
+      toast.error("Please log in to purchase a package.");
       router.push("/login");
       return;
     }
 
     if (user.accountType !== "employer") {
-      alert("Only employers can purchase packages");
+      toast.error("Only employer accounts can purchase packages.");
       return;
     }
 
@@ -224,19 +226,13 @@ export default function PricingPage() {
 
     try {
       setPromoLoading(true);
-
       setPromoError("");
 
       const response = await fetch("/api/promo/verify", {
         method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code: promoCode,
-
           packageName: selectedPkg.name,
         }),
       });
@@ -248,56 +244,19 @@ export default function PricingPage() {
       }
 
       setPromoApplied(true);
-
       setFinalPrice(0);
+      toast.success("Promo code applied! Package is now free 🎉");
     } catch (error: any) {
       setPromoApplied(false);
-
       setFinalPrice(null);
-
       setPromoError(error.message);
+      toast.error(error.message || "Invalid promo code.");
     } finally {
       setPromoLoading(false);
     }
   };
 
-  // actual function triggered from within the modal
-  // const handleConfirmPurchase = async () => {
-  //   if (!selectedPkg) return;
-  //   const packageName = selectedPkg.name;
-
-  //   try {
-  //     setLoadingPackage(packageName);
-
-  //     const response = await fetch("/api/employer/package/purchase", {
-  //       method: "POST",
-  //       credentials: "include",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         packageName,
-
-  //         promoCode: promoApplied ? promoCode : null,
-  //       }),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (!response.ok) {
-  //       throw new Error(data.error || "Failed to activate package");
-  //     }
-
-  //     alert(`${packageName} package activated successfully`);
-  //     setSelectedPkg(null); // Close modal
-  //     router.push("/dashboard");
-  //   } catch (error: any) {
-  //     alert(error.message || "Something went wrong");
-  //   } finally {
-  //     setLoadingPackage(null);
-  //   }
-  // };
-
+  
   const handleConfirmPurchase = async () => {
     if (!selectedPkg) return;
 
@@ -310,18 +269,9 @@ export default function PricingPage() {
       if (finalPrice === 0) {
         const response = await fetch("/api/employer/package/purchase", {
           method: "POST",
-
           credentials: "include",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            packageName,
-
-            promoCode,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ packageName, promoCode }),
         });
 
         const data = await response.json();
@@ -330,28 +280,21 @@ export default function PricingPage() {
           throw new Error(data.error || "Failed to activate package");
         }
 
-        alert(`${packageName} package activated successfully`);
-
+        toast.success(`${packageName} package activated successfully! 🎉`);
         setSelectedPkg(null);
-
         router.push("/dashboard");
-
         return;
       }
 
       // STRIPE FLOW
+      const toastId = toast.loading("Redirecting to secure checkout...");
+
       const response = await fetch("/api/stripe/create-checkout-session", {
         method: "POST",
-
         credentials: "include",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           packageName,
-
           promoCode: promoApplied ? promoCode : null,
         }),
       });
@@ -359,19 +302,21 @@ export default function PricingPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        toast.dismiss(toastId);
         throw new Error(data.error || "Failed to start payment");
       }
 
       // REDIRECT TO STRIPE
       if (data.checkoutUrl) {
+        toast.success("Redirecting to Stripe checkout...", { id: toastId });
         window.location.href = data.checkoutUrl;
-
         return;
       }
 
+      toast.dismiss(toastId);
       throw new Error("Stripe checkout URL missing");
     } catch (error: any) {
-      alert(error.message || "Something went wrong");
+      toast.error(error.message || "Something went wrong. Please try again.");
     } finally {
       setLoadingPackage(null);
     }

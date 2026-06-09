@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { Link } from "@/router";
 import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 import {
   Eye,
   Edit,
@@ -260,11 +261,12 @@ export default function DashboardPage() {
 
       if (data.success) {
         setJobs((prev) => prev.filter((job) => job.id !== jobId));
+        toast.success("Job posting deleted successfully.");
       } else {
-        alert(data.error || "Failed to delete job");
+        toast.error(data.error || "Failed to delete job");
       }
     } catch {
-      alert("Network error. Please try again.");
+      toast.error("Network error. Please try again.");
     } finally {
       setDeletingJobId(null);
     }
@@ -303,9 +305,10 @@ export default function DashboardPage() {
             : job,
         ),
       );
+      toast.success(`Job marked as ${nextStatus}.`);
     } catch (error) {
       console.error(error);
-      alert("Failed to update job status");
+      toast.error("Failed to update job status");
     } finally {
       setStatusUpdatingId(null);
     }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from '@dr.pogodin/react-helmet';
 import { Link } from '@/router';
 import { motion, AnimatePresence } from 'motion/react';
+import toast from 'react-hot-toast';
 import {
   Eye, EyeOff, CheckCircle, AlertCircle, ChevronRight, ArrowLeft, Mail, RefreshCw
 } from 'lucide-react';
@@ -270,10 +271,11 @@ export default function RegisterPage() {
         throw new Error(data.error || 'Failed to send verification code.');
       }
       setOtpExpiry(Date.now() + 10 * 60 * 1000);
-      // setOtpSent(true);
+      toast.success('Verification code sent to your email!');
       return true;
     } catch (error: any) {
       setServerError(error.message);
+      toast.error(error.message || 'Failed to send verification code.');
       return false;
     }
   };
@@ -363,14 +365,19 @@ export default function RegisterPage() {
       const registerData = await registerResponse.json();
 
       if (!registerResponse.ok) {
-        setServerError(registerData.error || 'Registration failed.');
+        const errMsg = registerData.error || 'Registration failed.';
+        setServerError(errMsg);
+        toast.error(errMsg);
         setLoading(false);
         return;
       }
 
       setSubmitted(true);
+      toast.success('Account created successfully! You can now log in.');
     } catch {
-      setServerError('Something went wrong. Please try again.');
+      const errMsg = 'Something went wrong. Please try again.';
+      setServerError(errMsg);
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
