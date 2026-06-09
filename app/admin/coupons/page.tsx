@@ -281,7 +281,9 @@ export default function CouponManagementPage() {
 
       const fileName = `${selectedPackage.replace(" ", "_")}_Coupons_${new Date().toISOString().slice(0, 10)}.xlsx`;
       XLSX.writeFile(wb, fileName);
-      toast.success(`Exported ${rows.length} coupons successfully!`, { id: toastId });
+      toast.success(`Exported ${rows.length} coupons successfully!`, {
+        id: toastId,
+      });
     } catch (e) {
       console.error("Export failed:", e);
       toast.error("Export failed. Please try again.", { id: toastId });
@@ -341,7 +343,8 @@ export default function CouponManagementPage() {
             </button>
           )}
 
-          <button
+          {/* generate codes */}
+          {/* <button
             onClick={handleSeed}
             disabled={seeding}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-md shadow-blue-600/10"
@@ -357,7 +360,7 @@ export default function CouponManagementPage() {
                 {seedDone ? "Re-Generate Coupons" : "Generate Coupons"}
               </>
             )}
-          </button>
+          </button> */}
         </div>
       </div>
 
