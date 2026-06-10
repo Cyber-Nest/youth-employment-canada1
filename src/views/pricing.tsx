@@ -421,13 +421,13 @@ export default function PricingPage() {
                   whileHover={{
                     y: -6,
                   }}
-                  className={`rounded-2xl p-6 relative flex flex-col justify-between transition-all duration-300 ${cardStyles}`}
+                  className={`rounded-2xl p-5 relative flex flex-col justify-between transition-all duration-300 ${cardStyles}`}
                 >
                   {/* BADGE */}
                   {pkg.badge && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
                       <span
-                        className={`text-[11px] font-extrabold px-3 py-1 rounded-full shadow-md whitespace-nowrap uppercase tracking-wider ${
+                        className={`text-[10px] font-bold px-3 py-1 rounded-full shadow-md whitespace-nowrap uppercase tracking-wider ${
                           pkg.highlight
                             ? "bg-[#EF4444] text-white"
                             : pkg.darkVariant
@@ -442,9 +442,9 @@ export default function PricingPage() {
 
                   <div>
                     {/* HEADER */}
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-3">
                       <h3
-                        className={`font-bold text-xl ${
+                        className={`font-bold text-lg ${
                           pkg.darkVariant ? "text-[#E6A15C]" : "text-[#0F172A]"
                         }`}
                         style={{
@@ -455,7 +455,7 @@ export default function PricingPage() {
                       </h3>
 
                       <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                           pkg.darkVariant
                             ? "bg-[#E6A15C]/10"
                             : pkg.highlight
@@ -464,7 +464,7 @@ export default function PricingPage() {
                         }`}
                       >
                         <pkg.icon
-                          size={18}
+                          size={16}
                           className={
                             pkg.darkVariant
                               ? "text-[#E6A15C]"
@@ -477,10 +477,10 @@ export default function PricingPage() {
                     </div>
 
                     {/* PRICE */}
-                    <div className="mb-6 border-b border-dashed pb-4">
+                    <div className="mb-4 border-b border-dashed pb-3">
                       <div className="flex items-baseline gap-2">
                         <span
-                          className={`text-4xl font-extrabold tracking-tight ${
+                          className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${
                             pkg.darkVariant
                               ? "text-[#F5EBE6]"
                               : "text-[#0F172A]"
@@ -490,7 +490,7 @@ export default function PricingPage() {
                         </span>
 
                         <span
-                          className={`text-sm line-through ${
+                          className={`text-xs line-through ${
                             pkg.darkVariant
                               ? "text-white/40"
                               : "text-[#475569]/50"
@@ -501,7 +501,7 @@ export default function PricingPage() {
                       </div>
 
                       <p
-                        className={`text-[10px] font-bold tracking-widest mt-1 uppercase ${
+                        className={`text-[9px] font-bold tracking-widest mt-0.5 uppercase ${
                           pkg.darkVariant
                             ? "text-white/50"
                             : "text-[#475569]/60"
@@ -513,7 +513,7 @@ export default function PricingPage() {
 
                     {/* TAGLINE */}
                     <p
-                      className={`text-[11px] font-bold tracking-wider mb-4 uppercase ${
+                      className={`text-[10px] font-bold tracking-wider mb-2 uppercase ${
                         pkg.darkVariant ? "text-[#E6A15C]/80" : "text-[#2563EB]"
                       }`}
                     >
@@ -521,18 +521,18 @@ export default function PricingPage() {
                     </p>
 
                     {/* FEATURES */}
-                    <ul className="flex flex-col gap-3 mb-8">
+                    <ul className="flex flex-col gap-2.5 mb-6">
                       {pkg.features.map((feature: string) => (
                         <li
                           key={feature}
-                          className={`flex items-start gap-2.5 text-xs font-medium ${
+                          className={`flex items-start gap-2 text-xs leading-normal ${
                             pkg.darkVariant
                               ? "text-white/80"
                               : "text-[#0F172A]/80"
                           }`}
                         >
                           <CheckCircle
-                            size={14}
+                            size={13}
                             className={`flex-shrink-0 mt-0.5 ${
                               pkg.darkVariant
                                 ? "text-[#E6A15C]"
@@ -550,7 +550,7 @@ export default function PricingPage() {
                   {/* BUTTON */}
                   <Button
                     onClick={() => handleInitiatePurchase(pkg)}
-                    className={`w-full font-semibold transition-colors text-xs py-5 rounded-xl ${
+                    className={`w-full font-semibold transition-colors text-xs py-4 rounded-xl ${
                       pkg.darkVariant
                         ? "bg-[#E6A15C] text-[#1E1B18] hover:bg-[#d4904b]"
                         : pkg.highlight
