@@ -16,6 +16,7 @@ export const DEFAULT_PACKAGES = [
     credits: 1,
     expiryDays: 180,
     unlimitedJobs: false,
+    active: true,
   },
   {
     name: "Deluxe",
@@ -34,6 +35,7 @@ export const DEFAULT_PACKAGES = [
     credits: 5,
     expiryDays: 180,
     unlimitedJobs: false,
+    active: true,
   },
   {
     name: "Ultimate",
@@ -52,6 +54,7 @@ export const DEFAULT_PACKAGES = [
     credits: 10,
     expiryDays: 180,
     unlimitedJobs: false,
+    active: true,
   },
   {
     name: "Pro Plan",
@@ -70,6 +73,7 @@ export const DEFAULT_PACKAGES = [
     credits: 20,
     expiryDays: 180,
     unlimitedJobs: false,
+    active: true,
   },
   {
     name: "Unlimited",
@@ -88,5 +92,6 @@ export const DEFAULT_PACKAGES = [
     credits: 0,
     expiryDays: 365,
     unlimitedJobs: true,
+    active: true,
   },
 ];

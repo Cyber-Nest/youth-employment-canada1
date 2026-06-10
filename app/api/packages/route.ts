@@ -9,7 +9,7 @@ export async function GET() {
   try {
     const packagesCollection = await collection<PackageDoc>("packages");
     const packages = await packagesCollection
-      .find({})
+      .find({ active: { $ne: false } })
       .sort({ order: 1 })
       .project({
         name: 1,
@@ -24,6 +24,7 @@ export async function GET() {
         credits: 1,
         expiryDays: 1,
         unlimitedJobs: 1,
+        active: 1,
       })
       .toArray();
 

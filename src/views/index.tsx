@@ -133,7 +133,7 @@ const stats = [
   { value: "All", label: "Provinces & Territories" },
 ];
 
-const packages = [
+const DEFAULT_STATIC_PACKAGES = [
   {
     icon: Star,
     name: "Starter",
@@ -145,7 +145,7 @@ const packages = [
       "Credit Never Expire",
       "1 Job Posting",
     ],
-    cta: "Select Package",
+    cta: "View Package",
     highlight: false,
     badge: "50% OFF",
   },
@@ -160,7 +160,7 @@ const packages = [
       "Credit Never Expire",
       "5 Job Posting",
     ],
-    cta: "Select Package",
+    cta: "View Package",
     highlight: true, // Marked as premium highlight variant
     badge: "Most Popular • 50% OFF",
   },
@@ -175,7 +175,7 @@ const packages = [
       "Credit Never Expire",
       "10 Job Posting",
     ],
-    cta: "Select Package",
+    cta: "View Package",
     highlight: false,
     badge: "50% OFF",
   },
@@ -190,7 +190,7 @@ const packages = [
       "Credit Never Expire",
       "20 Job Posting",
     ],
-    cta: "Select Package",
+    cta: "View Package",
     highlight: false,
     badge: "Best Value • 50% OFF",
   },
@@ -205,67 +205,21 @@ const packages = [
       "Credit Expire 1 Year",
       "Unlimited Jobs Posting",
     ],
-    cta: "Select Package",
+    cta: "View Package",
     highlight: false,
     darkVariant: true, // Custom premium dark look like the image
     badge: "Mega Deal • 50% OFF",
   },
 ];
 
-// const packages = [
-//   {
-//     name: "Starter Posting",
-//     tagline: "Launch your first youth opportunity",
-//     features: [
-//       "Single job listing",
-//       "30-day active posting",
-//       "Targeted youth search visibility",
-//       "Applicant email notifications",
-//     ],
-//     cta: "Get Started",
-//     highlight: false,
-//   },
-//   {
-//     name: "Featured Opportunity",
-//     tagline: "Stand out with a youth-focused listing",
-//     features: [
-//       "Highlighted placement",
-//       "60-day active posting",
-//       "Priority search results",
-//       "Featured badge on listing",
-//       "Applicant management tools",
-//     ],
-//     cta: "Post Featured",
-//     highlight: true,
-//     badge: "Most Popular",
-//   },
-//   {
-//     name: "Employer Spotlight",
-//     tagline: "Share your youth-friendly employer story",
-//     features: [
-//       "Company profile page",
-//       "Multiple job listings",
-//       "Logo & banner placement",
-//       "Youth hiring statement",
-//       "Priority support",
-//     ],
-//     cta: "Build Your Brand",
-//     highlight: false,
-//   },
-//   {
-//     name: "Hiring Partnership",
-//     tagline: "Support for sustained youth recruitment",
-//     features: [
-//       "Unlimited job postings",
-//       "Dedicated account support",
-//       "Applicant management tools",
-//       "Monthly performance insights",
-//       "Youth hiring resources",
-//     ],
-//     cta: "Contact Us",
-//     highlight: false,
-//   },
-// ];
+const ICON_MAP: Record<string, React.ElementType> = {
+  Starter: Star,
+  Deluxe: Zap,
+  Ultimate: Building2,
+  "Pro Plan": ShieldCheck,
+  Unlimited: CrownIcon,
+};
+
 
 const testimonials = [
   {
@@ -345,6 +299,30 @@ export default function HomePage() {
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [searchError, setSearchError] = useState("");
+
+  const [packagesList, setPackagesList] = useState<any[]>(DEFAULT_STATIC_PACKAGES);
+
+  useEffect(() => {
+    let active = true;
+    fetch(`/api/packages?t=${Date.now()}`, { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (active && data.success && data.packages && data.packages.length > 0) {
+          const mapped = data.packages.map((pkg: any) => ({
+            ...pkg,
+            icon: ICON_MAP[pkg.name] || Star,
+            cta: "View Package",
+          }));
+          setPackagesList(mapped);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch packages:", err);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -1162,7 +1140,7 @@ export default function HomePage() {
             variants={stagger}
             className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 items-stretch"
           >
-            {packages.map((pkg) => {
+            {packagesList.map((pkg) => {
               // Match the layout variations decided in the core pricing view
               const isDark = pkg.darkVariant;
               const isHigh = pkg.highlight;
@@ -1256,7 +1234,7 @@ export default function HomePage() {
 
                     {/* Functional Feature Mapping */}
                     <ul className="flex flex-col gap-2.5 mb-8">
-                      {pkg.features.map((f) => (
+                      {pkg.features.map((f: string) => (
                         <li
                           key={f}
                           className={`flex items-start gap-2.5 text-xs font-medium ${isDark ? "text-white/80" : "text-[#0F172A]/80"}`}

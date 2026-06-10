@@ -238,7 +238,8 @@ export type PackageDoc = {
   order: number;           
   credits: number;         
   expiryDays: number;      
-  unlimitedJobs: boolean;  
+  unlimitedJobs: boolean;  // whether this plan offers unlimited postings
+  active?: boolean;        // whether this plan is active/visible in public views
   createdAt: Date;
   updatedAt: Date;
 };

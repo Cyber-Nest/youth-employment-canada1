@@ -33,6 +33,7 @@ interface PkgData {
   credits: number;
   expiryDays: number;
   unlimitedJobs: boolean;
+  active?: boolean;
 }
 
 // ─── Package icon map ──────────────────────────────────────────────────────
@@ -75,6 +76,7 @@ function PackageCard({
   const [credits, setCredits] = useState(pkg.credits || 0);
   const [expiryDays, setExpiryDays] = useState(pkg.expiryDays || 180);
   const [unlimitedJobs, setUnlimitedJobs] = useState(!!pkg.unlimitedJobs);
+  const [active, setActive] = useState(pkg.active !== false);
   const [features, setFeatures] = useState<string[]>(pkg.features);
 
   const Icon = ICON_MAP[pkg.name] || Package;
@@ -88,6 +90,7 @@ function PackageCard({
     credits !== (pkg.credits || 0) ||
     expiryDays !== (pkg.expiryDays || 180) ||
     unlimitedJobs !== !!pkg.unlimitedJobs ||
+    active !== (pkg.active !== false) ||
     JSON.stringify(features) !== JSON.stringify(pkg.features);
 
   const handleAddFeature = () => setFeatures((f) => [...f, ""]);
@@ -106,6 +109,7 @@ function PackageCard({
     setCredits(pkg.credits || 0);
     setExpiryDays(pkg.expiryDays || 180);
     setUnlimitedJobs(!!pkg.unlimitedJobs);
+    setActive(pkg.active !== false);
     setFeatures(pkg.features);
     setEditing(false);
   };
@@ -136,6 +140,7 @@ function PackageCard({
           credits,
           expiryDays,
           unlimitedJobs,
+          active,
         }),
       });
       const data = await res.json();
@@ -153,6 +158,7 @@ function PackageCard({
         credits,
         expiryDays,
         unlimitedJobs,
+        active,
       });
     } catch (e: any) {
       toast.error(e.message || "Something went wrong.");
@@ -192,6 +198,10 @@ function PackageCard({
                 <Lock size={10} className="text-slate-400" />
                 <span className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">
                   Name is fixed
+                </span>
+                <span className="text-slate-300">•</span>
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${pkg.active !== false ? "text-emerald-600" : "text-rose-500"}`}>
+                  {pkg.active !== false ? "Active" : "Inactive"}
                 </span>
               </div>
             </div>
@@ -306,25 +316,47 @@ function PackageCard({
             </div>
           </div>
 
-          {/* Unlimited Jobs Toggle */}
+          {/* Unlimited & Active Toggle */}
           {editing ? (
-            <div className="flex items-center gap-2 py-1">
-              <input
-                type="checkbox"
-                id={`unlimited-${pkg.name}`}
-                checked={unlimitedJobs}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  setUnlimitedJobs(checked);
-                  if (checked) {
-                    setCredits(0);
-                  }
-                }}
-                className="rounded border-slate-200 text-blue-600 focus:ring-blue-500/20"
-              />
-              <label htmlFor={`unlimited-${pkg.name}`} className="text-xs font-semibold text-slate-900">
-                Unlimited Job Postings
-              </label>
+            <div className="flex flex-col gap-2.5 py-1">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id={`unlimited-${pkg.name}`}
+                  checked={unlimitedJobs}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setUnlimitedJobs(checked);
+                    if (checked) {
+                      setCredits(0);
+                    }
+                  }}
+                  className="rounded border-slate-200 text-blue-600 focus:ring-blue-500/20"
+                />
+                <label htmlFor={`unlimited-${pkg.name}`} className="text-xs font-semibold text-slate-900">
+                  Unlimited Job Postings
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between border border-slate-100 rounded-xl px-3 py-2 bg-slate-50/50">
+                <span className="text-xs font-semibold text-slate-700">
+                  Active (Visible to public)
+                </span>
+                <button
+                  type="button"
+                  id={`active-toggle-${pkg.name}`}
+                  onClick={() => setActive(!active)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/10 ${
+                    active ? "bg-emerald-500" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                      active ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
           ) : (
             unlimitedJobs && (
@@ -538,7 +570,7 @@ export default function AdminPackagesPage() {
       </div>
 
       {/* Info Banner */}
-      <div className="mb-6 flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-2xl px-5 py-4">
+      {/* <div className="mb-6 flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-2xl px-5 py-4">
         <Lock size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-semibold text-blue-900">
@@ -549,7 +581,7 @@ export default function AdminPackagesPage() {
             Changing names would break existing coupons, so only price, features and badge are editable.
           </p>
         </div>
-      </div>
+      </div> */}
 
       {/* Cards Grid */}
       {loading ? (
