@@ -224,3 +224,21 @@ export type OTPDoc = {
   createdAt: Date;
   used: boolean;
 };
+
+export type PackageDoc = {
+  _id?: any;
+  name: string;            // Fixed — Starter | Deluxe | Ultimate | Pro Plan | Unlimited
+  originalPrice: number;
+  discountedPrice: number;
+  tagline: string;
+  badge: string;
+  features: string[];
+  highlight: boolean;      
+  darkVariant: boolean;    
+  order: number;           
+  credits: number;         
+  expiryDays: number;      
+  unlimitedJobs: boolean;  
+  createdAt: Date;
+  updatedAt: Date;
+};

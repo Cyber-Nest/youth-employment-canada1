@@ -75,7 +75,7 @@ function OrganicShape({ className }: { className?: string }) {
   );
 }
 
-const packages = [
+const DEFAULT_STATIC_PACKAGES = [
   {
     icon: Star,
     name: "Starter",
@@ -154,6 +154,14 @@ const packages = [
   },
 ];
 
+const ICON_MAP: Record<string, React.ElementType> = {
+  Starter: Star,
+  Deluxe: Zap,
+  Ultimate: Building2,
+  "Pro Plan": ShieldCheck,
+  Unlimited: Crown,
+};
+
 const faqs = [
   {
     q: "How long are job postings active?",
@@ -183,10 +191,10 @@ export default function PricingPage() {
   const [promoError, setPromoError] = useState("");
   const [finalPrice, setFinalPrice] = useState<number | null>(null);
 
+  const [packagesList, setPackagesList] = useState<any[]>(DEFAULT_STATIC_PACKAGES);
+
   // Modal states
-  const [selectedPkg, setSelectedPkg] = useState<(typeof packages)[0] | null>(
-    null,
-  );
+  const [selectedPkg, setSelectedPkg] = useState<any | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/me", {
@@ -201,8 +209,30 @@ export default function PricingPage() {
       });
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    fetch(`/api/packages?t=${Date.now()}`, { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (active && data.success && data.packages && data.packages.length > 0) {
+          const mapped = data.packages.map((pkg: any) => ({
+            ...pkg,
+            icon: ICON_MAP[pkg.name] || Star,
+            cta: "Select Package",
+          }));
+          setPackagesList(mapped);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch packages:", err);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   //initial check before opening modal
-  const handleInitiatePurchase = (pkg: (typeof packages)[0]) => {
+  const handleInitiatePurchase = (pkg: any) => {
     if (!user) {
       toast.error("Please log in to purchase a package.");
       router.push("/login");
@@ -372,7 +402,7 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 items-stretch"
           >
-            {packages.map((pkg) => {
+            {packagesList.map((pkg) => {
               let cardStyles =
                 "bg-[#F8FAFC] border border-[#2563EB]/10 hover:shadow-xl";
 
@@ -492,7 +522,7 @@ export default function PricingPage() {
 
                     {/* FEATURES */}
                     <ul className="flex flex-col gap-3 mb-8">
-                      {pkg.features.map((feature) => (
+                      {pkg.features.map((feature: string) => (
                         <li
                           key={feature}
                           className={`flex items-start gap-2.5 text-xs font-medium ${

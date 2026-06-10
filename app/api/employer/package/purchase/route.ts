@@ -5,43 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { collection } from "@/server/db/mongo";
 
 import { getCurrentUser } from "@/server/auth/local-auth";
-
-const PACKAGE_CONFIG = {
-  Starter: {
-    credits: 1,
-    amount: 12.5,
-    unlimitedJobs: false,
-    expiryDays: 180,
-  },
-
-  Deluxe: {
-    credits: 5,
-    amount: 47.5,
-    unlimitedJobs: false,
-    expiryDays: 180,
-  },
-
-  Ultimate: {
-    credits: 10,
-    amount: 97.5,
-    unlimitedJobs: false,
-    expiryDays: 180,
-  },
-
-  "Pro Plan": {
-    credits: 20,
-    amount: 190,
-    unlimitedJobs: false,
-    expiryDays: 180,
-  },
-
-  Unlimited: {
-    credits: 0,
-    amount: 675,
-    unlimitedJobs: true,
-    expiryDays: 365,
-  },
-};
+import { PackageDoc } from "@/server/db/models";
 
 export async function POST(req: NextRequest) {
   try {
@@ -86,10 +50,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const selectedPackage =
-      PACKAGE_CONFIG[packageName as keyof typeof PACKAGE_CONFIG];
+    const packagesCollection = await collection<PackageDoc>("packages");
+    const dbPackage = await packagesCollection.findOne({ name: packageName });
 
-    if (!selectedPackage) {
+    if (!dbPackage) {
       return NextResponse.json(
         {
           error: "Invalid package selected",
@@ -191,7 +155,7 @@ export async function POST(req: NextRequest) {
 
     const expiresAt = new Date();
 
-    expiresAt.setDate(expiresAt.getDate() + selectedPackage.expiryDays);
+    expiresAt.setDate(expiresAt.getDate() + dbPackage.expiryDays);
 
     // UPDATE EXISTING PACKAGE
     if (existingPackage) {
@@ -199,7 +163,7 @@ export async function POST(req: NextRequest) {
         $set: {
           packageName,
 
-          unlimitedJobs: selectedPackage.unlimitedJobs,
+          unlimitedJobs: dbPackage.unlimitedJobs,
 
           isFreePlan: false,
 
@@ -213,11 +177,11 @@ export async function POST(req: NextRequest) {
         },
       };
 
-      if (!selectedPackage.unlimitedJobs) {
+      if (!dbPackage.unlimitedJobs) {
         updateDoc.$inc = {
-          remainingCredits: selectedPackage.credits,
+          remainingCredits: dbPackage.credits,
 
-          totalCreditsPurchased: selectedPackage.credits,
+          totalCreditsPurchased: dbPackage.credits,
         };
       }
 
@@ -238,15 +202,15 @@ export async function POST(req: NextRequest) {
 
         packageName,
 
-        remainingCredits: selectedPackage.credits,
+        remainingCredits: dbPackage.credits,
 
-        totalCreditsPurchased: selectedPackage.credits,
+        totalCreditsPurchased: dbPackage.credits,
 
-        unlimitedJobs: selectedPackage.unlimitedJobs,
+        unlimitedJobs: dbPackage.unlimitedJobs,
 
         isFreePlan: false,
 
-        jobPostExpiryDays: selectedPackage.expiryDays,
+        jobPostExpiryDays: dbPackage.expiryDays,
 
         status: "Active",
 
@@ -270,13 +234,13 @@ export async function POST(req: NextRequest) {
 
       packageName,
 
-      creditsAdded: selectedPackage.credits,
+      creditsAdded: dbPackage.credits,
 
-      unlimitedJobs: selectedPackage.unlimitedJobs,
+      unlimitedJobs: dbPackage.unlimitedJobs,
       paymentMethod: isFreePromo ? "Promo Code" : "Card",
       isFreePlan: false,
 
-      jobPostExpiryDays: selectedPackage.expiryDays,
+      jobPostExpiryDays: dbPackage.expiryDays,
 
       purchasedAt: now,
 
@@ -286,7 +250,7 @@ export async function POST(req: NextRequest) {
       paymentProvider: isFreePromo ? "promo_code" : "dummy",
       transactionId: isFreePromo ? `PROMO-${randomUUID()}` : randomUUID(),
       currency: "CAD",
-      amount: isFreePromo ? 0 : selectedPackage.amount,
+      amount: isFreePromo ? 0 : dbPackage.discountedPrice,
       promoCodeUsed: promoCode,
       createdAt: now,
 
@@ -300,7 +264,7 @@ export async function POST(req: NextRequest) {
 
       packageName,
 
-      amount: isFreePromo ? 0 : selectedPackage.amount,
+      amount: isFreePromo ? 0 : dbPackage.discountedPrice,
 
       currency: "CAD",
 

@@ -4,30 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { collection } from "@/server/db/mongo";
 import { getCurrentUser } from "@/server/auth/local-auth";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { PackageDoc } from "@/server/db/models";
 
-const PACKAGE_CONFIG = {
-  Starter: {
-    credits: 1,
-    amount: 12.5,
-  },
-  Deluxe: {
-    credits: 5,
-    amount: 47.5,
-  },
-  Ultimate: {
-    credits: 10,
-    amount: 97.5,
-  },
-  "Pro Plan": {
-    credits: 20,
-    amount: 190,
-  },
-  Unlimited: {
-    credits: 0,
-    amount: 675,
-  },
-};
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,10 +37,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const selectedPackage =
-      PACKAGE_CONFIG[packageName as keyof typeof PACKAGE_CONFIG];
+    const packagesCollection = await collection<PackageDoc>("packages");
+    const dbPackage = await packagesCollection.findOne({ name: packageName });
 
-    if (!selectedPackage) {
+    if (!dbPackage) {
       return NextResponse.json(
         { error: "Invalid package selected" },
         { status: 400 },
@@ -117,7 +96,7 @@ export async function POST(req: NextRequest) {
       id: transactionId,
       employerId: employer.id,
       packageName,
-      amount: selectedPackage.amount,
+      amount: dbPackage.discountedPrice,
       currency: "CAD",
       paymentStatus: "pending",
       paymentProvider: "stripe",
@@ -141,7 +120,7 @@ export async function POST(req: NextRequest) {
             product_data: {
               name: `${packageName} Package`,
             },
-            unit_amount: Math.round(selectedPackage.amount * 100),
+            unit_amount: Math.round(dbPackage.discountedPrice * 100),
           },
           quantity: 1,
         },

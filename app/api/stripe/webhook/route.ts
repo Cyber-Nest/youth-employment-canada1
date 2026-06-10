@@ -4,40 +4,10 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { collection } from "@/server/db/mongo";
 
+import { PackageDoc } from "@/server/db/models";
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-
-const PACKAGE_CONFIG = {
-  Starter: {
-    credits: 1,
-    unlimitedJobs: false,
-    expiryDays: 180,
-  },
-
-  Deluxe: {
-    credits: 5,
-    unlimitedJobs: false,
-    expiryDays: 180,
-  },
-
-  Ultimate: {
-    credits: 10,
-    unlimitedJobs: false,
-    expiryDays: 180,
-  },
-
-  "Pro Plan": {
-    credits: 20,
-    unlimitedJobs: false,
-    expiryDays: 180,
-  },
-
-  Unlimited: {
-    credits: 0,
-    unlimitedJobs: true,
-    expiryDays: 365,
-  },
-};
 
 export async function POST(req: Request) {
   try {
@@ -113,10 +83,10 @@ export async function POST(req: Request) {
         );
       }
 
-      const selectedPackage =
-        PACKAGE_CONFIG[packageName as keyof typeof PACKAGE_CONFIG];
+      const packagesCollection = await collection<PackageDoc>("packages");
+      const dbPackage = await packagesCollection.findOne({ name: packageName });
 
-      if (!selectedPackage) {
+      if (!dbPackage) {
         return NextResponse.json(
           {
             error: "Invalid package config",
@@ -141,7 +111,7 @@ export async function POST(req: Request) {
 
       const expiresAt = new Date();
 
-      expiresAt.setDate(expiresAt.getDate() + selectedPackage.expiryDays);
+      expiresAt.setDate(expiresAt.getDate() + dbPackage.expiryDays);
 
       // UPDATE PAYMENT
       await paymentTransactions.updateOne(
@@ -165,7 +135,7 @@ export async function POST(req: Request) {
           $set: {
             packageName,
 
-            unlimitedJobs: selectedPackage.unlimitedJobs,
+            unlimitedJobs: dbPackage.unlimitedJobs,
 
             isFreePlan: false,
 
@@ -179,11 +149,11 @@ export async function POST(req: Request) {
           },
         };
 
-        if (!selectedPackage.unlimitedJobs) {
+        if (!dbPackage.unlimitedJobs) {
           updateDoc.$inc = {
-            remainingCredits: selectedPackage.credits,
+            remainingCredits: dbPackage.credits,
 
-            totalCreditsPurchased: selectedPackage.credits,
+            totalCreditsPurchased: dbPackage.credits,
           };
         }
 
@@ -204,15 +174,15 @@ export async function POST(req: Request) {
 
           packageName,
 
-          remainingCredits: selectedPackage.credits,
+          remainingCredits: dbPackage.credits,
 
-          totalCreditsPurchased: selectedPackage.credits,
+          totalCreditsPurchased: dbPackage.credits,
 
-          unlimitedJobs: selectedPackage.unlimitedJobs,
+          unlimitedJobs: dbPackage.unlimitedJobs,
 
           isFreePlan: false,
 
-          jobPostExpiryDays: selectedPackage.expiryDays,
+          jobPostExpiryDays: dbPackage.expiryDays,
 
           status: "Active",
 
@@ -235,13 +205,13 @@ export async function POST(req: Request) {
         employerId,
 
         packageName,
-        creditsAdded: selectedPackage.credits,
+        creditsAdded: dbPackage.credits,
 
-        unlimitedJobs: selectedPackage.unlimitedJobs,
+        unlimitedJobs: dbPackage.unlimitedJobs,
 
         isFreePlan: false,
 
-        jobPostExpiryDays: selectedPackage.expiryDays,
+        jobPostExpiryDays: dbPackage.expiryDays,
 
         purchasedAt: now,
 
