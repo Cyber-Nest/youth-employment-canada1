@@ -2,10 +2,12 @@ import { NextRequest } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 
 const JWT_SECRET = process.env.ADMIN_JWT_SECRET || "youth-employment-canada-admin-panel-secret-token";
+const ADMIN_TOKEN_EXPIRY_MS = 60 * 60 * 24 * 1000; // 1 day in milliseconds
 
 export function signAdminToken(payload: { email: string; role: string }): string {
   const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
-  const data = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  // Include iat (issued at) timestamp for expiry verification
+  const data = Buffer.from(JSON.stringify({ ...payload, iat: Date.now() })).toString("base64url");
   const signature = createHmac("sha256", JWT_SECRET)
     .update(`${header}.${data}`)
     .digest("base64url");
@@ -28,7 +30,14 @@ export function verifyAdminToken(token: string): { email: string; role: string }
       return null;
     }
     
-    return JSON.parse(Buffer.from(data, "base64url").toString());
+    const decoded = JSON.parse(Buffer.from(data, "base64url").toString());
+
+    // Check token expiry — reject tokens older than 1 day
+    if (!decoded.iat || Date.now() - decoded.iat > ADMIN_TOKEN_EXPIRY_MS) {
+      return null;
+    }
+
+    return { email: decoded.email, role: decoded.role };
   } catch {
     return null;
   }

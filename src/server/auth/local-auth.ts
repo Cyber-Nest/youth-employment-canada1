@@ -58,7 +58,7 @@ export async function findAccountByUserId(userId: string) {
 export async function createLocalSession(userId: string) {
   const token = randomUUID();
   const now = new Date();
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day
   const requestHeaders = await headers();
   const sessions = await collection<SessionDoc>("sessions");
 
