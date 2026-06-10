@@ -7,6 +7,7 @@ import {
   Ticket,
   LogOut,
   Shield,
+  Package,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -14,6 +15,11 @@ const NAV_ITEMS = [
     label: "Coupon Management",
     href: "/admin/coupons",
     icon: Ticket,
+  },
+  {
+    label: "Package Management",
+    href: "/admin/packages",
+    icon: Package,
   },
 ];
 
