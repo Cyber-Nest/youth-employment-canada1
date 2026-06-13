@@ -348,10 +348,21 @@ export async function PUT(
       );
     }
 
-    if (body.salary?.trim() && !/^[\d,]+$/.test(body.salary.trim())) {
+    if (body.salary?.trim() && !/^[\d,.]+$/.test(body.salary.trim())) {
       return NextResponse.json(
         {
-          error: "Salary should contain only numbers and commas",
+          error: "Salary should contain only numbers, commas, and decimals",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (body.salary?.trim() && !body.salaryPeriod?.trim()) {
+      return NextResponse.json(
+        {
+          error: "Salary period is required when salary is provided",
         },
         {
           status: 400,
