@@ -343,10 +343,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (salaryValue && !/^[\d,]+$/.test(salaryValue)) {
+  if (salaryValue && !/^[\d,.]+$/.test(salaryValue)) {
     return NextResponse.json(
       {
-        error: "Salary should contain only numbers and commas",
+        error: "Salary should contain only numbers, commas, and decimals",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (salaryValue && !String(salaryPeriod ?? "").trim()) {
+    return NextResponse.json(
+      {
+        error: "Salary period is required when salary is provided.",
       },
       { status: 400 },
     );

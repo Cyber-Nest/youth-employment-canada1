@@ -83,9 +83,9 @@ const validations = {
   },
   salary: (value: string): string | null => {
     if (!value.trim()) return null;
-    const salaryRegex = /^[\d,]+$/;
+    const salaryRegex = /^[\d,.]+$/;
     if (!salaryRegex.test(value)) {
-      return "Salary should contain only numbers and commas";
+      return "Salary should contain only numbers, commas, and decimals";
     }
     return null;
   },
@@ -256,6 +256,7 @@ export default function PostAJobPage({
   const [salary, setSalary] = useState("");
   const [salaryError, setSalaryError] = useState("");
   const [salaryPeriod, setSalaryPeriod] = useState("");
+  const [salaryPeriodError, setSalaryPeriodError] = useState("");
   const [vacancies, setVacancies] = useState("");
   const [adDurationDays, setAdDurationDays] = useState("90");
   const [startDate, setStartDate] = useState("");
@@ -376,6 +377,18 @@ export default function PostAJobPage({
     return !error;
   }, []);
 
+  const validateSalaryPeriod = useCallback(
+    (value: string, salaryVal: string) => {
+      if (salaryVal.trim() && !value.trim()) {
+        setSalaryPeriodError("Salary period is required when salary is provided");
+        return false;
+      }
+      setSalaryPeriodError("");
+      return true;
+    },
+    [],
+  );
+
   const validateContactName = useCallback((value: string) => {
     const error = validations.name(value);
     setContactNameError(error || "");
@@ -460,6 +473,12 @@ export default function PostAJobPage({
   useEffect(() => {
     if (touched.salary) validateSalary(salary);
   }, [salary, touched.salary, validateSalary]);
+
+  useEffect(() => {
+    if (touched.salaryPeriod || touched.salary) {
+      validateSalaryPeriod(salaryPeriod, salary);
+    }
+  }, [salaryPeriod, salary, touched.salaryPeriod, touched.salary, validateSalaryPeriod]);
 
   useEffect(() => {
     if (touched.contactName) validateContactName(contactName);
@@ -559,6 +578,11 @@ export default function PostAJobPage({
         validator: () => validateDescription(descHtml),
         field: "descHtml",
       },
+      {
+        value: salaryPeriod,
+        validator: () => validateSalaryPeriod(salaryPeriod, salary),
+        field: "salaryPeriod",
+      },
     ];
 
     fieldsToValidate.forEach((f) =>
@@ -571,6 +595,7 @@ export default function PostAJobPage({
       contactName: true,
       website: true,
       salary: true,
+      salaryPeriod: true,
     }));
 
     let isValid = true;
@@ -896,7 +921,10 @@ export default function PostAJobPage({
                       </Label>
                       <select
                         value={province}
-                        onChange={(e) => setProvince(e.target.value)}
+                        onChange={(e) => {
+                          setProvince(e.target.value);
+                          setTouched((prev) => ({ ...prev, province: true }));
+                        }}
                         onBlur={() => handleBlur("province")}
                         className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
                           provinceError && touched.province
@@ -923,7 +951,10 @@ export default function PostAJobPage({
                       </Label>
                       <select
                         value={employmentType}
-                        onChange={(e) => setEmploymentType(e.target.value)}
+                        onChange={(e) => {
+                          setEmploymentType(e.target.value);
+                          setTouched((prev) => ({ ...prev, employmentType: true }));
+                        }}
                         onBlur={() => handleBlur("employmentType")}
                         className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
                           employmentTypeError && touched.employmentType
@@ -966,8 +997,16 @@ export default function PostAJobPage({
                         </Label>
                         <select
                           value={salaryPeriod}
-                          onChange={(e) => setSalaryPeriod(e.target.value)}
-                          className="w-full rounded-md border border-blue-200 bg-white px-3 py-2 text-sm"
+                          onChange={(e) => {
+                            setSalaryPeriod(e.target.value);
+                            setTouched((prev) => ({ ...prev, salaryPeriod: true }));
+                          }}
+                          onBlur={() => handleBlur("salaryPeriod")}
+                          className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+                            salaryPeriodError && touched.salaryPeriod
+                              ? "border-red-500 focus:ring-red-300"
+                              : "border-blue-200 focus:ring-blue-300"
+                          }`}
                         >
                           <option value="">Select</option>
                           <option value="Year">Year</option>
@@ -976,6 +1015,9 @@ export default function PostAJobPage({
                           <option value="Day">Day</option>
                           <option value="Hour">Hour</option>
                         </select>
+                        <ErrorMessage
+                          message={touched.salaryPeriod ? salaryPeriodError : undefined}
+                        />
                       </div>
                     </div>
                   </div>
@@ -1004,7 +1046,10 @@ export default function PostAJobPage({
                     </Label>
                     <select
                       value={category}
-                      onChange={(e) => setCategory(e.target.value)}
+                      onChange={(e) => {
+                        setCategory(e.target.value);
+                        setTouched((prev) => ({ ...prev, category: true }));
+                      }}
                       onBlur={() => handleBlur("category")}
                       className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
                         categoryError && touched.category

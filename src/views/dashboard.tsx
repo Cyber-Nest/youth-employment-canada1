@@ -585,7 +585,6 @@ export default function DashboardPage() {
                         <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 mt-auto">
                           <Link
                             to={`/jobs/${job.id}`}
-                            target="_blank"
                             className="w-full"
                           >
                             <Button
