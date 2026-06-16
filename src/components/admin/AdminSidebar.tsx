@@ -8,6 +8,8 @@ import {
   LogOut,
   Shield,
   Package,
+  Building2,
+  CreditCard,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -20,6 +22,16 @@ const NAV_ITEMS = [
     label: "Package Management",
     href: "/admin/packages",
     icon: Package,
+  },
+  {
+    label: "Employer Management",
+    href: "/admin/employers",
+    icon: Building2,
+  },
+  {
+    label: "Payment Management",
+    href: "/admin/payments",
+    icon: CreditCard,
   },
 ];
 
