@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
+import { collection, ensureIndexes } from "@/server/db/mongo";
+import type { AdminDoc } from "@/server/db/models";
 
 const JWT_SECRET = process.env.ADMIN_JWT_SECRET || "youth-employment-canada-admin-panel-secret-token";
 const ADMIN_TOKEN_EXPIRY_MS = 60 * 60 * 24 * 1000; // 1 day in milliseconds
@@ -50,6 +52,12 @@ export async function requireAdmin(req: NextRequest): Promise<{ email: string } 
     
     const decoded = verifyAdminToken(token);
     if (!decoded || decoded.role !== "admin") return null;
+    
+    // Verify in database
+    await ensureIndexes();
+    const admins = await collection<AdminDoc>("admins");
+    const admin = await admins.findOne({ email: decoded.email.toLowerCase() });
+    if (!admin) return null;
     
     return { email: decoded.email };
   } catch {

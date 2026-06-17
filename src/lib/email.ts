@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 export const sendOTP = async (
   email: string,
   otp: string,
-  purpose: "registration" | "password_reset",
+  purpose: "registration" | "password_reset" | "admin_change",
 ) => {
   try {
     const emailContent = {
@@ -29,6 +29,13 @@ export const sendOTP = async (
         subHeading: "We received a request to reset your password.",
         instruction:
           "Use the verification code below to continue resetting your password.",
+      },
+      admin_change: {
+        subject: "Youth Employment Canada | Admin Credential Change OTP",
+        heading: "Admin Credential Change Verification",
+        subHeading: "We received a request to change your admin email and/or password.",
+        instruction:
+          "Use the verification code below to verify your identity and confirm these changes.",
       },
     };
 

@@ -213,7 +213,15 @@ export type ApplicationDoc = {
   updatedAt: Date;
 };
 
-export type OTPPurpose = "registration" | "password_reset";
+export type AdminDoc = {
+  email: string;
+  password: string;
+  emailChangeCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type OTPPurpose = "registration" | "password_reset" | "admin_change";
 
 export type OTPDoc = {
   id: string;

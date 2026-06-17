@@ -1,19 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { Link } from "@/router";
 import { usePathname } from "next/navigation";
 import { Menu, Shield, CalendarDays, ChevronRight } from "lucide-react";
+import AdminProfileModal from "./AdminProfileModal";
 
 interface AdminTopbarProps {
   onToggleSidebar: () => void;
   adminEmail: string;
   onLogout: () => void;
+  onProfileUpdate?: (newEmail: string) => void;
 }
 
 export default function AdminTopbar({
   onToggleSidebar,
   adminEmail,
+  onProfileUpdate,
 }: AdminTopbarProps) {
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const pathname = usePathname();
   let title = "Admin Portal";
   let currentLink = "/admin";
@@ -107,7 +112,10 @@ export default function AdminTopbar({
         </div>
 
         {/* User Profile Component */}
-        <div className="flex items-center gap-3 pl-4 border-l border-slate-200 h-9">
+        <button
+          onClick={() => setIsProfileOpen(true)}
+          className="flex items-center gap-3 pl-4 border-l border-slate-200 h-9 hover:opacity-85 text-left transition-opacity focus:outline-none"
+        >
           <div className="relative flex-shrink-0">
             <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm shadow-blue-600/10">
               {(adminEmail?.charAt(0) || "A").toUpperCase()}
@@ -124,8 +132,14 @@ export default function AdminTopbar({
               {adminEmail || "admin@youthemployment.ca"}
             </p>
           </div>
-        </div>
+        </button>
       </div>
+
+      <AdminProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        onSuccess={onProfileUpdate}
+      />
     </header>
   );
 }

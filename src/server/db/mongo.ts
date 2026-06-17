@@ -44,5 +44,42 @@ export async function ensureIndexes() {
     db.collection('jobs').createIndex({ jobUniqueId: 1 }, { unique: true }),
     db.collection('jobs').createIndex({ status: 1, postedAt: -1 }),
     db.collection('applications').createIndex({ jobId: 1, userId: 1 }, { unique: true }),
+    db.collection('admins').createIndex({ email: 1 }, { unique: true }),
   ]);
+
+  // Seed Admin if not exists or migrate password format
+  try {
+    const admins = db.collection('admins');
+    const count = await admins.countDocuments();
+    if (count === 0) {
+      const email = (process.env.ADMIN_EMAIL || "admin@youthemployment.ca").toLowerCase().trim();
+      const password = process.env.ADMIN_PASSWORD || "Admin@12345";
+      const { encryptPassword } = await import("@/lib/admin/crypto");
+      const encryptedPassword = encryptPassword(password);
+      await admins.insertOne({
+        email,
+        password: encryptedPassword,
+        emailChangeCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any);
+      console.log("Admin seeded to database (encrypted):", email);
+    } else {
+      // Auto-migrate plain/bcrypt passwords in DB to encrypted format
+      const admin = await admins.findOne();
+      if (admin) {
+        const isBcrypt = admin.password.startsWith("$2") && admin.password.length === 60;
+        const isPlaintext = !admin.password.includes(":");
+        if (isBcrypt || isPlaintext) {
+          const defaultPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
+          const { encryptPassword } = await import("@/lib/admin/crypto");
+          const encrypted = encryptPassword(defaultPassword);
+          await admins.updateOne({ _id: admin._id }, { $set: { password: encrypted } });
+          console.log("Admin password migrated/re-seeded to encrypted format in DB.");
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error seeding admin in ensureIndexes:", error);
+  }
 }
