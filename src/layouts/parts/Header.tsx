@@ -255,7 +255,7 @@ export default function Header() {
 
                         window.location.href = "/";
                       }}
-                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-500 hover:text-blue-600 transition-colors"
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                     >
                       <LogOut size={14} />
                       Sign Out

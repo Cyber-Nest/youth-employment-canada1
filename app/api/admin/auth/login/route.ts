@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { signAdminToken } from "@/lib/admin/adminAuth";
+import { collection, ensureIndexes } from "@/server/db/mongo";
+import type { AdminDoc } from "@/server/db/models";
+import { decryptPassword } from "@/lib/admin/crypto";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const email = body.email?.trim()?.toLowerCase();
     const password = body.password;
-
-    const envEmail = (process.env.ADMIN_EMAIL || "admin@youthemployment.ca").trim().toLowerCase();
-    const envPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
 
     if (!email || !password) {
       return NextResponse.json(
@@ -17,7 +17,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (email !== envEmail || password !== envPassword) {
+    await ensureIndexes();
+    const admins = await collection<AdminDoc>("admins");
+    const admin = await admins.findOne({ email: email.toLowerCase() });
+
+    if (!admin) {
+      return NextResponse.json(
+        { error: "Invalid credentials." },
+        { status: 401 }
+      );
+    }
+
+    // Verify using decrypted password
+    const decrypted = decryptPassword(admin.password);
+    if (decrypted !== password) {
       return NextResponse.json(
         { error: "Invalid credentials." },
         { status: 401 }

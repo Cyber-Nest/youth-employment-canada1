@@ -144,11 +144,23 @@ export default function JobDetailPage() {
       return "Invalid date";
     }
 
+    let isUtcDateOnly = false;
+    if (typeof dateValue === "string") {
+      isUtcDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(dateValue) ||
+        dateValue.endsWith("T00:00:00.000Z") ||
+        dateValue.endsWith("T00:00:00Z");
+    } else if (dateValue instanceof Date) {
+      isUtcDateOnly = dateValue.getUTCHours() === 0 &&
+        dateValue.getUTCMinutes() === 0 &&
+        dateValue.getUTCSeconds() === 0 &&
+        dateValue.getUTCMilliseconds() === 0;
+    }
+
     return date.toLocaleDateString(locale, {
       day: "numeric",
       month: "short",
       year: "numeric",
-      timeZone: "America/Edmonton",
+      timeZone: isUtcDateOnly ? "UTC" : "America/Edmonton",
     });
   }
 

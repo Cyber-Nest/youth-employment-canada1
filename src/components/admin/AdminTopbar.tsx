@@ -1,21 +1,42 @@
 "use client";
 
+import { useState } from "react";
 import { Link } from "@/router";
 import { usePathname } from "next/navigation";
 import { Menu, Shield, CalendarDays, ChevronRight } from "lucide-react";
+import AdminProfileModal from "./AdminProfileModal";
 
 interface AdminTopbarProps {
   onToggleSidebar: () => void;
   adminEmail: string;
   onLogout: () => void;
+  onProfileUpdate?: (newEmail: string) => void;
 }
 
 export default function AdminTopbar({
   onToggleSidebar,
   adminEmail,
+  onProfileUpdate,
 }: AdminTopbarProps) {
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const pathname = usePathname();
-  const isPackages = pathname?.startsWith("/admin/packages");
+  let title = "Admin Portal";
+  let currentLink = "/admin";
+
+  if (pathname?.startsWith("/admin/packages")) {
+    title = "Package Management";
+    currentLink = "/admin/packages";
+  } else if (pathname?.startsWith("/admin/coupons")) {
+    title = "Coupon Management";
+    currentLink = "/admin/coupons";
+  } else if (pathname?.startsWith("/admin/employers")) {
+    title = "Employer Management";
+    currentLink = "/admin/employers";
+  } else if (pathname?.startsWith("/admin/payments")) {
+    title = "Payment Management";
+    currentLink = "/admin/payments";
+  }
+
   const currentDate = new Date().toLocaleDateString("en-CA", {
     day: "2-digit",
     month: "short",
@@ -55,7 +76,7 @@ export default function AdminTopbar({
         {/* Desktop Breadcrumb Navigation */}
         <div className="hidden md:flex items-center gap-3 text-[13px] font-bold tracking-wide text-slate-400">
           <Link
-            to={isPackages ? "/admin/packages" : "/admin/coupons"}
+            to={currentLink}
             className="hover:text-slate-900 transition-colors duration-200 flex items-center gap-1.5 opacity-80 hover:opacity-100"
           >
             Portal
@@ -64,7 +85,7 @@ export default function AdminTopbar({
           <ChevronRight size={14} className="text-slate-300 stroke-[3]" />
 
           <span className="text-slate-800 bg-slate-100 px-3 py-1.5 rounded-xl font-extrabold tracking-normal text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] border border-slate-200/40">
-            {isPackages ? "Package Management" : "Coupon Management"}
+            {title}
           </span>
         </div>
       </div>
@@ -91,7 +112,10 @@ export default function AdminTopbar({
         </div>
 
         {/* User Profile Component */}
-        <div className="flex items-center gap-3 pl-4 border-l border-slate-200 h-9">
+        <button
+          onClick={() => setIsProfileOpen(true)}
+          className="flex items-center gap-3 pl-4 border-l border-slate-200 h-9 hover:opacity-85 text-left transition-opacity focus:outline-none"
+        >
           <div className="relative flex-shrink-0">
             <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm shadow-blue-600/10">
               {(adminEmail?.charAt(0) || "A").toUpperCase()}
@@ -108,8 +132,14 @@ export default function AdminTopbar({
               {adminEmail || "admin@youthemployment.ca"}
             </p>
           </div>
-        </div>
+        </button>
       </div>
+
+      <AdminProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        onSuccess={onProfileUpdate}
+      />
     </header>
   );
 }

@@ -158,11 +158,16 @@ const formatDate = (dateString?: string, locale: string = "en-CA") => {
     return "Invalid date";
   }
 
+  const isUtcDateOnly = typeof dateString === "string" &&
+    (/^\d{4}-\d{2}-\d{2}$/.test(dateString) ||
+     dateString.endsWith("T00:00:00.000Z") ||
+     dateString.endsWith("T00:00:00Z"));
+
   return date.toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
-    timeZone: "America/Edmonton",
+    timeZone: isUtcDateOnly ? "UTC" : "America/Edmonton",
   });
 };
 
